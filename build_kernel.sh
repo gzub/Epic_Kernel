@@ -26,7 +26,7 @@ fi
 
 TARGET_LOCALE="vzw"
 
-TOOLCHAIN=/usr/local/toolchain/arm-2009q3/bin
+TOOLCHAIN=/usr/local/toolchain/arm-2010.09/bin
 TOOLCHAIN_PREFIX=arm-none-linux-gnueabi-
 
 KERNEL_BUILD_DIR=`pwd`/Kernel
