@@ -3067,7 +3067,7 @@ void  get_message(struct work_struct * p)
 			y = y | ((quantum_msg[4] & 0x0C)  >> 2);
 
 			size = quantum_msg[5];
-			printk("******** Touch Finger********* x=%d y=%d\n", x,y );	
+//			printk("******** Touch Finger********* x=%d y=%d\n", x,y );	
 #if 0
 			if( size > 20 ) {
 				print_msg();
