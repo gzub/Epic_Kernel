@@ -154,7 +154,7 @@ unsigned int fg_read_soc(void)
 #else
 		if (data[0])
 		{
-			adj_soc = (((data[0]*10) - 15) * 100) / (950 - 15);	// hanapark_Atlas
+			adj_soc = (((data[0]*10) - 15) * 100) / (980 - 15);	// hanapark_Atlas
 			if (adj_soc > 100)
 				adj_soc = 100;
 			else if (adj_soc < 0)
