@@ -4655,7 +4655,7 @@ uint8_t QT_Boot(void);
 #endif
 
 
-#define DEBUG_PRESS 1
+#define DEBUG_PRESS 0
 
 #if DEBUG_PRESS 
 #define dprintk printk 
