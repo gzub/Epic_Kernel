@@ -3025,7 +3025,7 @@ void  get_message(struct work_struct * p)
 			
 			if(quantum_msg[0] < 2  || quantum_msg[0] >= 12) {
 			
-				printk(KERN_DEBUG "[TSP] msg id =  %x %x %x %x %x %x %x %x %x\n", quantum_msg[0], quantum_msg[1], quantum_msg[2],\
+				dprintk(KERN_DEBUG "[TSP] msg id =  %x %x %x %x %x %x %x %x %x\n", quantum_msg[0], quantum_msg[1], quantum_msg[2],\
 					 quantum_msg[3], quantum_msg[4], quantum_msg[5], quantum_msg[6], quantum_msg[7], quantum_msg[8]);
 
 				if((quantum_msg[0] == 1)&&((quantum_msg[1]&0x10) == 0x10)){
@@ -3067,7 +3067,7 @@ void  get_message(struct work_struct * p)
 			y = y | ((quantum_msg[4] & 0x0C)  >> 2);
 
 			size = quantum_msg[5];
-//			printk("******** Touch Finger********* x=%d y=%d\n", x,y );	
+			dprintk("******** Touch Finger********* x=%d y=%d\n", x,y );	
 #if 0
 			if( size > 20 ) {
 				print_msg();
@@ -3103,7 +3103,7 @@ void  get_message(struct work_struct * p)
 				fingerInfo[id].size_id= (id<<8)|size;
 				fingerInfo[id].pressure= 0;
 				bChangeUpDn= 1;
-				printk(KERN_DEBUG "[TSP]### Finger[%d] Up (%d,%d) - touch num is (%d)  status=0x%02x\n", id, fingerInfo[id].x, fingerInfo[id].y , --qt_touch_num_state[id], quantum_msg[1]);
+				dprintk(KERN_DEBUG "[TSP]### Finger[%d] Up (%d,%d) - touch num is (%d)  status=0x%02x\n", id, fingerInfo[id].x, fingerInfo[id].y , --qt_touch_num_state[id], quantum_msg[1]);
 			}
 			else if ( (quantum_msg[1] & 0x80) && (quantum_msg[1] & 0x40) )	// Detect & Press
 			{
@@ -3126,7 +3126,7 @@ void  get_message(struct work_struct * p)
 				fingerInfo[id].x= (int16_t)x;
 				fingerInfo[id].y= (int16_t)y;
 				bChangeUpDn= 1;
-				printk(KERN_DEBUG "[TSP]### Finger[%d] Down (%d,%d) - touch num is (%d)   status=0x%02x\n", id, fingerInfo[id].x, fingerInfo[id].y , ++qt_touch_num_state[id], quantum_msg[1] );
+				dprintk(KERN_DEBUG "[TSP]### Finger[%d] Down (%d,%d) - touch num is (%d)   status=0x%02x\n", id, fingerInfo[id].x, fingerInfo[id].y , ++qt_touch_num_state[id], quantum_msg[1] );
 			}
 			else if ( (quantum_msg[1] & 0x80) && (quantum_msg[1] & 0x10) )	// Detect & Move
 			{
@@ -3542,7 +3542,7 @@ int qt602240_probe(struct i2c_client *client,
 
 //	DEBUG;
 	dprintk("+-----------------------------------------+\n");
-	printk(KERN_DEBUG "|  Quantum Touch Driver Probe!            |\n");
+	dprintk(KERN_DEBUG "|  Quantum Touch Driver Probe!            |\n");
 	dprintk("+-----------------------------------------+\n");
 
 	INIT_WORK(&qt602240->ts_event_work, get_message );
