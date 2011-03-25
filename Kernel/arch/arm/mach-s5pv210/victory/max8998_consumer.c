@@ -36,8 +36,8 @@
 #elif defined CONFIG_S5PV210_ATLAS
 #include <mach/atlas/max8998_function.h>
 #endif
-#define DBG(fmt...)
-//#define DBG printk
+// #define DBG(fmt...)
+#define DBG printk
 
 #define PMIC_ARM		0
 #define PMIC_INT		1
@@ -63,6 +63,8 @@ unsigned int S5PC11X_FREQ_TAB = 1;
 #define RAMP_RATE 10 // 10mv/usec
 unsigned int step_curr;
 
+extern int exp_UV_mV[7];
+
 enum PMIC_VOLTAGE {
 	VOUT_0_75,
 	VOUT_0_80,
@@ -87,12 +89,13 @@ enum PMIC_VOLTAGE {
 static const unsigned int frequency_match_1GHZ[][4] = {
 /* frequency, Mathced VDD ARM voltage , Matched VDD INT*/
 #if 1
-        {1200000, 1300, 1100, 0}, //added 1.2GHz step with voltages
-        {1000000, 1250, 1100, 0}, //changed voltage from 1275 to 1250 for undervolt at 1GHz
-        {800000, 1200, 1100, 1},
-        {400000, 1200, 1100, 2}, //had to increase voltage to 1200 from 1050 per original comment above dvs_volt_table_800MHZ below
-        {200000, 950, 1100, 4},
-        {100000, 950, 1000, 5},
+        {1300000, 1325, 1100, 0},
+        {1200000, 1325, 1100, 1},
+        {1000000, 1225, 1100, 2},
+        {800000, 1150, 1100, 3},
+        {400000, 1150, 1100, 4},
+        {200000, 950, 1100, 5},
+        {100000, 950, 1000, 6},
 #else //just for dvs test
         {1000000, 1250, 1100, 0},
         {800000, 1250, 1100, 1},
@@ -116,10 +119,10 @@ const unsigned int (*frequency_match[2])[4] = {
 
 #if 0
 /*  voltage table */
-static const unsigned int voltage_table[16] = { //todo: add more voltage steps to table
-	750, 800, 850, 900, 950, 1000, 1050,
-	1100, 1150, 1200, 1250, 1300, 1350,
-	1400, 1450, 1500
+static const unsigned int voltage_table[28] = {
+	750, 800, 850, 900, 925, 950, 975, 1000, 1025, 1050,
+	1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250, 1275,
+	1300, 1325, 1350, 1375, 1400, 1425, 1450, 1475, 1500
 };
 #endif
 
@@ -133,25 +136,20 @@ static unsigned int s_arm_voltage=0, s_int_voltage=0;
 #ifndef DECREASE_DVFS_DELAY
 /*only 4 Arm voltages and 2 internal voltages possible*/
 static const unsigned int dvs_volt_table_800MHZ[][3] = {
-        {L0, DVSARM2, DVSINT1},
+        {L0, DVSARM3, DVSINT1},
         {L1, DVSARM3, DVSINT1},
- //266       {L2, DVSARM3, DVSINT1},
         {L2, DVSARM4, DVSINT1},
         {L3, DVSARM4, DVSINT2},
-//        {L4, DVSARM4, DVSINT2},
-//        {L5, DVSARM4, DVSINT2},
 };
 
-static const unsigned int dvs_volt_table_1GHZ[][3] = { //rewrote voltage table for 1.2GHz step and changed to match voltages defined above
-	{L0, DVSARM1, DVSINT1}
-        {L1, DVSARM2, DVSINT1},//DVSINT0
-        {L2, DVSARM3, DVSINT1},
-        {L3, DVSARM3, DVSINT1},
- //266       {L3, DVSARM3, DVSINT1},
-        {L4, DVSARM3, DVSINT1},
-        {L5, DVSARM4, DVSINT2},
-//        {L5, DVSARM4, DVSINT2},
-//        {L6, DVSARM4, DVSINT2},
+static const unsigned int dvs_volt_table_1GHZ[][3] = {
+        {L0, DVSARM1, DVSINT1}, // 1.3ghz
+        {L1, DVSARM1, DVSINT1}, // 1.2ghz
+        {L2, DVSARM2, DVSINT1}, // 1.0ghz
+        {L3, DVSARM3, DVSINT1}, // 800mhz
+        {L4, DVSARM3, DVSINT1}, // 400mhz
+        {L5, DVSARM4, DVSINT1}, // 200mhz
+        {L6, DVSARM4, DVSINT2}, // 100mhz
 };
 
 
@@ -160,10 +158,10 @@ const unsigned int (*dvs_volt_table[2])[3] = {
         dvs_volt_table_800MHZ,
 };
 
-static const unsigned int dvs_arm_voltage_set[][2] = { //reassigned voltages for table above
-	{DVSARM1, 1300},
-	{DVSARM2, 1250},
-	{DVSARM3, 1200},
+static const unsigned int dvs_arm_voltage_set[][2] = {
+	{DVSARM1, 1325},
+	{DVSARM2, 1225},
+	{DVSARM3, 1150},
 	{DVSARM4, 950},
 	{DVSINT1, 1100},
 	{DVSINT2, 1000},
@@ -180,7 +178,8 @@ static int set_max8998(unsigned int pwr, enum perf_level p_lv)
 	DBG("%s : p_lv = %d : pwr = %d \n", __FUNCTION__, p_lv,pwr);
 
 	if(pwr == PMIC_ARM) {
-		voltage = frequency_match_tab[p_lv][pwr + 1];
+//		voltage = frequency_match_tab[p_lv][pwr + 1] - exp_UV_mV[p_lv];
+		voltage = frequency_match_tab[p_lv][pwr] - exp_UV_mV[p_lv];
 
 		if(voltage == s_arm_voltage)
 			return ret;
@@ -205,7 +204,8 @@ static int set_max8998(unsigned int pwr, enum perf_level p_lv)
 		s_arm_voltage = voltage;
 
 	} else if(pwr == PMIC_INT) {
-		voltage = frequency_match_tab[p_lv][pwr + 1];
+//		voltage = frequency_match_tab[p_lv][pwr + 1];
+		voltage = frequency_match_tab[p_lv][pwr];
 		if(voltage == s_int_voltage)
                         return ret;
 
@@ -327,6 +327,33 @@ int set_gpio_dvs(enum perf_level p_lv)
             gpio_set_value(S5PV210_GPB(7),0);
             break;
         case L4:
+            //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT | PMIC_SET3_BIT), S5PV210_GPH0DAT);
+             //BUCK_1_EN_A disabled
+            gpio_set_value(S5PV210_GPB(6),0);
+            // BUCK_1_EN_B disabled
+            gpio_set_value(S5PV210_GPB(3),0);
+            //BUCK_2_EN enabled
+            gpio_set_value(S5PV210_GPB(7),1);
+            break;
+        case L5:
+            //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT | PMIC_SET3_BIT), S5PV210_GPH0DAT);
+             //BUCK_1_EN_A enabled
+            gpio_set_value(S5PV210_GPB(6),1);
+            // BUCK_1_EN_B disabled
+            gpio_set_value(S5PV210_GPB(3),0);
+            //BUCK_2_EN enabled
+            gpio_set_value(S5PV210_GPB(7),1);
+            break;
+        case L6:
+            //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT | PMIC_SET3_BIT), S5PV210_GPH0DAT);
+             //BUCK_1_EN_A disabled
+            gpio_set_value(S5PV210_GPB(6),0);
+            // BUCK_1_EN_B enabled
+            gpio_set_value(S5PV210_GPB(3),1);
+            //BUCK_2_EN enabled
+            gpio_set_value(S5PV210_GPB(7),1);
+            break;
+        case L7:
             //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT | PMIC_SET3_BIT), S5PV210_GPH0DAT);
              //BUCK_1_EN_A enabled
             gpio_set_value(S5PV210_GPB(6),1);
@@ -460,7 +487,7 @@ void max8998_init(void)
 	else // for 1GHZ table
 	{
 		step_curr = L0;
-		set_voltage_dvs(L2); //switch to 800MHZ //adjusted to match for 1.2GHZ table
+		set_voltage_dvs(L1); //switch to 800MHZ
 	}
 	if (!dvs_initilized) dvs_initilized=1;
 }
@@ -677,3 +704,4 @@ MODULE_AUTHOR("Amit Daniel");
 MODULE_DESCRIPTION("MAX 8998 consumer driver");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("platform:max8998-consumer");
+

@@ -33,15 +33,17 @@
 #include <plat/s5pv210.h>
 #include <mach/regs-audss.h>
 
-#define DBG(fmt...) 
-//#define DBG(fmt...) printk(fmt)
+// #define DBG(fmt...) 
+#define DBG(fmt...) printk(fmt)
 #define CLK_DIV_CHANGE_BY_STEP 0
 #define MAX_DVFS_LEVEL  7
 extern unsigned int s5pc11x_cpufreq_index;
 
 #if 0
 /*APLL_FOUT, MPLL_FOUT, ARMCLK, HCLK_DSYS*/
-static const u32 s5p_sysout_clk_tab_1GHZ[][4] = { //added 1200MHZ entry from 1DOT2GHZ table below
+static const u32 s5p_sysout_clk_tab_1GHZ[][4] = {
+	// APLL:1300,ARMCLK:1300,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{1300* MHZ, 667 *MHZ, 1300 *MHZ, 166 *MHZ},
 	// APLL:1200,ARMCLK:1200,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
 	{1200* MHZ, 667 *MHZ, 1200 *MHZ, 166 *MHZ},
 	// APLL:1000,ARMCLK:1000,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
@@ -62,23 +64,25 @@ static const u32 s5p_sysout_clk_tab_1GHZ[][4] = { //added 1200MHZ entry from 1DO
 /*div0 ratio table*/
 /*apll, a2m, HCLK_MSYS, PCLK_MSYS, HCLK_DSYS, PCLK_DSYS, HCLK_PSYS, PCLK_PSYS, MFC_DIV, G3D_DIV, MSYS source(2D, 3D, MFC)(0->apll,1->mpll), DMC0 div*/
 static const u32 s5p_sys_clk_div0_tab_1GHZ[][DIV_TAB_MAX_FIELD] = {
-	{0, 5, 5, 1, 3, 1, 4, 1, 3, 3, 0, 3}, //added entry from 1DOT2GHZ table below
-        {0, 4, 4, 1, 3, 1, 4, 1, 3, 3, 0, 3},
-        {0, 3, 3, 1, 3, 1, 4, 1, 3, 3, 0, 3},
-        {1, 3, 1, 1, 3, 1, 4, 1, 3, 3, 0, 3},
-        {3, 3, 0, 1, 3, 1, 4, 1, 3, 3, 0, 3},
-        {7, 3, 0, 0, 7, 0, 9, 0, 3, 3, 1, 4},
+        {0, 6, 6, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 1.3ghz
+        {0, 5, 5, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 1.2ghz
+        {0, 4, 4, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 1.0ghz
+        {0, 3, 3, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 800mhz
+        {1, 3, 1, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 400mhz
+        {3, 3, 0, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 200mhz
+        {7, 3, 0, 0, 7, 0, 9, 0, 3, 3, 1, 4}, // 100mhz
 };
 
 /*pms value table*/
 /*APLL(m, p, s), MPLL(m, p, s)*/
 static const u32 s5p_sys_clk_mps_tab_1GHZ[][6] = {
-        {150, 3, 1, 667, 12, 1}, //added timer line for 1.2GHz based off S5PC110_clk_info clk_info array below
-        {125, 3, 1, 667, 12, 1},
-        {100, 3, 1, 667, 12, 1},
-        {100, 3, 1, 667, 12, 1},
-        {100, 3, 1, 667, 12, 1},
-        {100, 3, 1, 667, 12, 1},
+        {320, 6, 1, 667, 12, 1}, // 1.3ghz
+        {150, 3, 1, 667, 12, 1}, // 1.2ghz
+        {125, 3, 1, 667, 12, 1}, // 1.0ghz
+        {100, 3, 1, 667, 12, 1}, // 800mhz
+        {100, 3, 1, 667, 12, 1}, // 400mhz
+        {100, 3, 1, 667, 12, 1}, // 200mhz
+        {100, 3, 1, 667, 12, 1}, // 100mhz
 };
 
 
@@ -125,8 +129,19 @@ struct S5PC110_clk_info {
 };
 
 
-struct S5PC110_clk_info clk_info[] = { //commented out if statement so it wouldn't get skipped
-//#if USE_1DOT2GHZ
+struct S5PC110_clk_info clk_info[] = {
+{
+	// APLL:1300,ARMCLK:1300,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	.armclk		=	1300* MHZ,
+	.apllout	=	1300* MHZ,
+	.apll_mps	=	((320<<16)|(6<<8)|1),
+	.msys_div0	=	(0|(6<<4)|(6<<8)|(1<<12)),
+	.mpllout	=	667* MHZ,
+	.mpll_mps	=	((667<<16)|(12<<8)|(1)),
+	.psys_dsys_div0 =	((3<<16)|(1<<20)|(4<<24)|(1<<28)),
+	.div2val	=	((3<<0)|(3<<4)|(3<<8)),
+	.dmc0_div6 	=	(3<<28),
+},
 {
 	// APLL:1200,ARMCLK:1200,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
 	.armclk		=	1200* MHZ,
@@ -139,7 +154,6 @@ struct S5PC110_clk_info clk_info[] = { //commented out if statement so it wouldn
 	.div2val	=	((3<<0)|(3<<4)|(3<<8)),
 	.dmc0_div6 	=	(3<<28),
 },
-//#endif// A extra entry for 1200MHZ level 
 {
 	// APLL:1000,ARMCLK:1000,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
 	.armclk		=	1000* MHZ,
@@ -3547,3 +3561,4 @@ void __init s5pv210_register_clocks(void)
 
 	s3c_pwmclk_init();
 }
+
