@@ -39,8 +39,8 @@
 #define USE_DVS
 #define GPIO_BASED_DVS
 
-// #define DBG(fmt...)
-#define DBG(fmt...) printk(fmt)
+#define DBG(fmt...)
+//#define DBG(fmt...) printk(fmt)
 
 
 unsigned int dvfs_change_direction;
