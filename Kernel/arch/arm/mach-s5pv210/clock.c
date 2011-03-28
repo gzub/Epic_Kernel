@@ -1,7 +1,7 @@
 /* linux/arch/arm/mach-s5pv210/clock.c
  *
  * Copyright (c) 2010 Samsung Electronics Co., Ltd.
- *             http://www.samsung.com/
+ *		http://www.samsung.com/
  *
  * S5PV210 - Clock support
  *
@@ -33,14 +33,88 @@
 #include <plat/s5pv210.h>
 #include <mach/regs-audss.h>
 
-#if 0
-#define DBG(fmt...) 
-#else
+// #define DBG(fmt...) 
 #define DBG(fmt...) printk(fmt)
-#endif
 #define CLK_DIV_CHANGE_BY_STEP 0
 #define MAX_DVFS_LEVEL  7
 extern unsigned int s5pc11x_cpufreq_index;
+
+#if 0
+/*APLL_FOUT, MPLL_FOUT, ARMCLK, HCLK_DSYS*/
+static const u32 s5p_sysout_clk_tab_1GHZ[][4] = {
+	// APLL:1300,ARMCLK:1300,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{1300* MHZ, 667 *MHZ, 1300 *MHZ, 166 *MHZ},
+	// APLL:1200,ARMCLK:1200,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{1200* MHZ, 667 *MHZ, 1200 *MHZ, 166 *MHZ},
+	// APLL:1000,ARMCLK:1000,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{1000* MHZ, 667 *MHZ, 1000 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:800,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 800 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:400,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 400 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:200,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 200 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:100,HCLK_MSYS:100,MPLL:667,HCLK_DSYS:83,HCLK_PSYS:66,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 100 *MHZ, 133 *MHZ},
+};
+
+
+#define DIV_TAB_MAX_FIELD	12
+
+/*div0 ratio table*/
+/*apll, a2m, HCLK_MSYS, PCLK_MSYS, HCLK_DSYS, PCLK_DSYS, HCLK_PSYS, PCLK_PSYS, MFC_DIV, G3D_DIV, MSYS source(2D, 3D, MFC)(0->apll,1->mpll), DMC0 div*/
+static const u32 s5p_sys_clk_div0_tab_1GHZ[][DIV_TAB_MAX_FIELD] = {
+        {0, 6, 6, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 1.3ghz
+        {0, 5, 5, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 1.2ghz
+        {0, 4, 4, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 1.0ghz
+        {0, 3, 3, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 800mhz
+        {1, 3, 1, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 400mhz
+        {3, 3, 0, 1, 3, 1, 4, 1, 3, 3, 0, 3}, // 200mhz
+        {7, 3, 0, 0, 7, 0, 9, 0, 3, 3, 1, 4}, // 100mhz
+};
+
+/*pms value table*/
+/*APLL(m, p, s), MPLL(m, p, s)*/
+static const u32 s5p_sys_clk_mps_tab_1GHZ[][6] = {
+        {320, 6, 1, 667, 12, 1}, // 1.3ghz
+        {150, 3, 1, 667, 12, 1}, // 1.2ghz
+        {125, 3, 1, 667, 12, 1}, // 1.0ghz
+        {100, 3, 1, 667, 12, 1}, // 800mhz
+        {100, 3, 1, 667, 12, 1}, // 400mhz
+        {100, 3, 1, 667, 12, 1}, // 200mhz
+        {100, 3, 1, 667, 12, 1}, // 100mhz
+};
+
+
+/*APLL_FOUT, MPLL_FOUT, ARMCLK, HCLK_DSYS*/
+static const u32 s5p_sysout_clk_tab_1DOT2GHZ[][4] = {
+	// APLL:1200,ARMCLK:1200,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{1200* MHZ, 667 *MHZ, 1200 *MHZ, 166 *MHZ},
+	// APLL:1000,ARMCLK:1000,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{1000* MHZ, 667 *MHZ, 1000 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:800,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 800 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:400,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 400 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:200,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 200 *MHZ, 166 *MHZ},
+	// APLL:800,ARMCLK:100,HCLK_MSYS:100,MPLL:667,HCLK_DSYS:83,HCLK_PSYS:66,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	{800* MHZ, 667 *MHZ, 100 *MHZ, 133 *MHZ},
+};
+
+
+/*div0 ratio table*/
+/*apll, a2m, HCLK_MSYS, PCLK_MSYS, HCLK_DSYS, PCLK_DSYS, HCLK_PSYS, PCLK_PSYS, MFC_DIV, G3D_DIV,MSYS source, DMC0 div*/
+static const u32 s5p_sys_clk_div0_tab_1DOT2GHZ[][DIV_TAB_MAX_FIELD] = {
+	{0, 5, 5, 1, 3, 1, 4, 1, 3, 3, 0, 3},
+        {0, 4, 4, 1, 3, 1, 4, 1, 3, 3, 0, 3},
+        {0, 3, 3, 1, 3, 1, 4, 1, 3, 3, 0, 3},
+        {1, 3, 1, 1, 3, 1, 4, 1, 3, 3, 0, 3},
+        {3, 3, 0, 1, 3, 1, 4, 1, 3, 3, 0, 3},
+        {7, 3, 0, 0, 7, 0, 9, 0, 3, 3, 1, 4},
+};
+
+#endif
 
 struct S5PC110_clk_info {
 	u32	armclk;
@@ -57,40 +131,40 @@ struct S5PC110_clk_info {
 
 struct S5PC110_clk_info clk_info[] = {
 {
-//APLL:1300,ARMCLK:1300,A2M:185.71428571428572,HCLK_MSYS:185.71428571428572,MPLL:667,HCLK_PSYS:133.4,HCLK_DSYS:166.75,PCLK_MSYS:92.85714285714286,PCLK_DSYS:83.375,G3D:166.75,G3D:166.75
-.armclk=1300* MHZ,   //ARMCLK
-.apllout=1300* MHZ,   //APLL_OUT
-.apll_mps=((325<<16)|(6<<8)|1),   //APLL m, APLL p, APLL, s
-.msys_div0=(0|(6<<4)|(6<<8)|(1<<12)),   //APLL_DIV, A2M_DIV, HCLK_MSYS_DIV, PCLK_MSYS_DIV
-.mpllout=667* MHZ,   //MPLL_OUT
-.mpll_mps=((667<<16)|(12<<8)|(1)),   //MPLL m, MPLL p, MPLL s
-.psys_dsys_div0=((3<<16)|(1<<20)|(4<<24)|(1<<28)),   //HCLK_DSYS_DIV, PCLK_DSYS_DIV, HCLK_PSYS_DIV, PCLK_PSYS_DIV
-.div2val=((3<<0)|(3<<4)|(3<<8)),   //G3D_DIV, MFC_DIV, G2D_DIV
-.dmc0_div6=(3<<28),   //DMC0_DIV
+	// APLL:1300,ARMCLK:1300,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	.armclk		=	1300* MHZ,
+	.apllout	=	1300* MHZ,
+	.apll_mps	=	((320<<16)|(6<<8)|1),
+	.msys_div0	=	(0|(6<<4)|(6<<8)|(1<<12)),
+	.mpllout	=	667* MHZ,
+	.mpll_mps	=	((667<<16)|(12<<8)|(1)),
+	.psys_dsys_div0 =	((3<<16)|(1<<20)|(4<<24)|(1<<28)),
+	.div2val	=	((3<<0)|(3<<4)|(3<<8)),
+	.dmc0_div6 	=	(3<<28),
 },
 {
-//APLL:1200,ARMCLK:1200,A2M:200,HCLK_MSYS:200,MPLL:667,HCLK_PSYS:133.4,HCLK_DSYS:166.75,PCLK_MSYS:100,PCLK_DSYS:83.375,G3D:166.75
-.armclk=1200* MHZ,   //ARMCLK
-.apllout=1200* MHZ,   //APLL_OUT
-.apll_mps=((300<<16)|(6<<8)|1),   //APLL m, APLL p, APLL, s
-.msys_div0=(0|(5<<4)|(5<<8)|(1<<12)),   //APLL_DIV, A2M_DIV, HCLK_MSYS_DIV, PCLK_MSYS_DIV
-.mpllout=667* MHZ,   //MPLL_OUT
-.mpll_mps=((667<<16)|(12<<8)|(1)),   //MPLL m, MPLL p, MPLL s
-.psys_dsys_div0=((3<<16)|(1<<20)|(4<<24)|(1<<28)),   //HCLK_DSYS_DIV, PCLK_DSYS_DIV, HCLK_PSYS_DIV, PCLK_PSYS_DIV
-.div2val=((3<<0)|(3<<4)|(3<<8)),   //G3D_DIV, MFC_DIV, G2D_DIV
-.dmc0_div6=(3<<28),   //DMC0_DIV
+	// APLL:1200,ARMCLK:1200,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	.armclk		=	1200* MHZ,
+	.apllout	=	1200* MHZ,
+	.apll_mps	=	((150<<16)|(3<<8)|1),
+	.msys_div0	=	(0|(5<<4)|(5<<8)|(1<<12)),
+	.mpllout	=	667* MHZ,
+	.mpll_mps	=	((667<<16)|(12<<8)|(1)),
+	.psys_dsys_div0 =	((3<<16)|(1<<20)|(4<<24)|(1<<28)),
+	.div2val	=	((3<<0)|(3<<4)|(3<<8)),
+	.dmc0_div6 	=	(3<<28),
 },
 {
-//APLL:1000,ARMCLK:1000,A2M:200,HCLK_MSYS:200,MPLL:667,HCLK_PSYS:133.4,HCLK_DSYS:166.75,PCLK_MSYS:100,PCLK_DSYS:83.375,G3D:166.75,G3D:166.75
-.armclk=1000* MHZ,   //ARMCLK
-.apllout=1000* MHZ,   //APLL_OUT
-.apll_mps=((125<<16)|(3<<8)|1),   //APLL m, APLL p, APLL, s
-.msys_div0=(0|(4<<4)|(4<<8)|(1<<12)),   //APLL_DIV, A2M_DIV, HCLK_MSYS_DIV, PCLK_MSYS_DIV
-.mpllout=667* MHZ,   //MPLL_OUT
-.mpll_mps=((667<<16)|(12<<8)|(1)),   //MPLL m, MPLL p, MPLL s
-.psys_dsys_div0=((3<<16)|(1<<20)|(4<<24)|(1<<28)),   //HCLK_DSYS_DIV, PCLK_DSYS_DIV, HCLK_PSYS_DIV, PCLK_PSYS_DIV
-.div2val=((3<<0)|(3<<4)|(3<<8)),   //G3D_DIV, MFC_DIV, G2D_DIV
-.dmc0_div6=(3<<28),   //DMC0_DIV
+	// APLL:1000,ARMCLK:1000,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
+	.armclk		=	1000* MHZ,
+	.apllout	=	1000* MHZ,
+	.apll_mps	=	((125<<16)|(3<<8)|1),
+	.msys_div0	=	(0|(4<<4)|(4<<8)|(1<<12)),
+	.mpllout	=	667* MHZ,
+	.mpll_mps	=	((667<<16)|(12<<8)|(1)),
+	.psys_dsys_div0 =	((3<<16)|(1<<20)|(4<<24)|(1<<28)),
+	.div2val	=	((3<<0)|(3<<4)|(3<<8)),
+	.dmc0_div6 	=	(3<<28),
 },
 {
 	// APLL:800,ARMCLK:800,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
@@ -141,6 +215,36 @@ struct S5PC110_clk_info clk_info[] = {
 	.dmc0_div6 	=	(7<<28),
 }
 };
+
+#if 0
+/*pms value table*/
+/*APLL(m, p, s), MPLL(m, p, s)*/
+static const u32 s5p_sys_clk_mps_tab_1DOT2GHZ[][6] = {
+        {150, 3, 1, 667, 12, 1},
+        {125, 3, 1, 667, 12, 1},
+        {100, 3, 1, 667, 12, 1},
+        {100, 3, 1, 667, 12, 1},
+        {100, 3, 1, 667, 12, 1},
+        {100, 3, 1, 667, 12, 1},
+};
+
+
+static const u32 (*s5p_sysout_clk_tab_all[2])[4] = {
+        s5p_sysout_clk_tab_1GHZ,
+        s5p_sysout_clk_tab_1DOT2GHZ,
+};
+
+static const u32 (*s5p_sys_clk_div0_tab_all[2])[DIV_TAB_MAX_FIELD] = {
+        s5p_sys_clk_div0_tab_1GHZ,
+        s5p_sys_clk_div0_tab_1DOT2GHZ,
+};
+
+static const u32 (*s5p_sys_clk_mps_tab_all[2])[6] = {
+        s5p_sys_clk_mps_tab_1GHZ,
+        s5p_sys_clk_mps_tab_1DOT2GHZ,
+};
+
+#endif
 
 #ifdef CONFIG_PM_PWR_GATING
 extern int s5p_power_gating(unsigned int power_domain, unsigned int on_off);
@@ -305,7 +409,6 @@ static int s5pv210_clk_ip4_ctrl(struct clk *clk, int enable)
 	return s5p_gatectrl(S5P_CLKGATE_IP4, clk, enable);
 }
 
-#if 0
 #if defined(CONFIG_CPU_S5PV210_EVT1)
 static int s5pv210_clk_ip5_ctrl(struct clk *clk, int enable)
 {
@@ -317,7 +420,7 @@ static int s5pv210_clk_block_ctrl(struct clk *clk, int enable)
 {
 	return s5p_gatectrl(S5P_CLKGATE_BLOCK, clk, enable);
 }
-#endif
+
 static int s5pv210_clk_mask0_ctrl(struct clk *clk, int enable)
 {
 	return s5p_gatectrl(S5P_CLK_SRC_MASK0, clk, enable);
@@ -495,7 +598,7 @@ int s5pc11x_armclk_set_rate(struct clk *clk, unsigned long rate)
 	/* validate target frequency */ 
 	if(clk_info[index].armclk != rate)
 	{
-		DBG("=DVFS ERR target_freq (%d) != cpu_tab_freq (%ld)\n", clk_info[index].armclk, rate);
+		DBG("=DVFS ERR target_freq (%d) != cpu_tab_freq (%d)\n", clk_info[index].armclk, rate);
 		return 0;
 	}
 
@@ -3353,6 +3456,7 @@ void __init_or_cpufreq s5pv210_setup_clocks(void)
 	unsigned long mpll;
 	unsigned long epll;
 	u32 clkdiv0, clkdiv1;
+	struct clk *clk_mmc;
 	struct clk *pSclk_mdnie;
 
 	clk_fout_epll.enable = s5pv210_epll_enable;
