@@ -89,11 +89,11 @@ enum PMIC_VOLTAGE {
 static const unsigned int frequency_match_1GHZ[][4] = {
 /* frequency, Mathced VDD ARM voltage , Matched VDD INT*/
 #if 1
-        {1300000, 1325, 1100, 0},
-        {1200000, 1325, 1100, 1},
-        {1000000, 1225, 1100, 2},
-        {800000, 1150, 1100, 3},
-        {400000, 1150, 1100, 4},
+        {1120000, 1325, 1100, 0},
+        {1000000, 1225, 1100, 1},
+        {800000, 1175, 1100, 2},
+        {600000, 1125, 1100, 3},
+        {400000, 1050, 1100, 4},
         {200000, 950, 1100, 5},
         {100000, 950, 1000, 6},
 #else //just for dvs test
@@ -143,10 +143,10 @@ static const unsigned int dvs_volt_table_800MHZ[][3] = {
 };
 
 static const unsigned int dvs_volt_table_1GHZ[][3] = {
-        {L0, DVSARM1, DVSINT1}, // 1.3ghz
-        {L1, DVSARM1, DVSINT1}, // 1.2ghz
-        {L2, DVSARM2, DVSINT1}, // 1.0ghz
-        {L3, DVSARM3, DVSINT1}, // 800mhz
+        {L0, DVSARM1, DVSINT1}, // 1.12ghz
+        {L1, DVSARM1, DVSINT1}, // 1.0ghz
+        {L2, DVSARM2, DVSINT1}, // 800mhz
+        {L3, DVSARM3, DVSINT1}, // 600mhz
         {L4, DVSARM3, DVSINT1}, // 400mhz
         {L5, DVSARM4, DVSINT1}, // 200mhz
         {L6, DVSARM4, DVSINT2}, // 100mhz
@@ -178,7 +178,6 @@ static int set_max8998(unsigned int pwr, enum perf_level p_lv)
 	DBG("%s : p_lv = %d : pwr = %d \n", __FUNCTION__, p_lv,pwr);
 
 	if(pwr == PMIC_ARM) {
-//		voltage = frequency_match_tab[p_lv][pwr + 1] - exp_UV_mV[p_lv];
 		voltage = frequency_match_tab[p_lv][pwr] - exp_UV_mV[p_lv];
 
 		if(voltage == s_arm_voltage)
@@ -204,7 +203,6 @@ static int set_max8998(unsigned int pwr, enum perf_level p_lv)
 		s_arm_voltage = voltage;
 
 	} else if(pwr == PMIC_INT) {
-//		voltage = frequency_match_tab[p_lv][pwr + 1];
 		voltage = frequency_match_tab[p_lv][pwr];
 		if(voltage == s_int_voltage)
                         return ret;
