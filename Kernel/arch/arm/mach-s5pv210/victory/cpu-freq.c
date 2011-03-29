@@ -39,8 +39,8 @@
 #define USE_DVS
 #define GPIO_BASED_DVS
 
-//#define DBG(fmt...)
-#define DBG(fmt...) printk(fmt)
+#define DBG(fmt...)
+//#define DBG(fmt...) printk(fmt)
 
 
 unsigned int dvfs_change_direction;
@@ -284,12 +284,12 @@ unsigned int s5pc11x_target_frq(unsigned int pred_freq,
 	int index;
 	//unsigned long irqflags;
 	unsigned int freq;
-	DBG("s5pc110_unlock_dvfs_high_level called for pred_freq=%d with flag %d\n",pred_freq, flag);
+	DBG("s5pc110_target_frq called for pred_freq=%d with flag %d\n",pred_freq, flag);
 
 	struct cpufreq_frequency_table *freq_tab = s5pc110_freq_table[S5PC11X_FREQ_TAB];
 	
 	spin_lock(&g_dvfslock);
-        DBG("spc5pc110_unlock_dvfs_high_level freq_tab[0].frequency: %d\n", freq_tab[0].frequency);
+        DBG("spc5pc110_target_frq freq_tab[0].frequency: %d\n", freq_tab[0].frequency);
 	if(freq_tab[0].frequency < pred_freq) {
 	   index = 0;	
 	   goto s5pc11x_target_frq_end;
@@ -301,7 +301,7 @@ unsigned int s5pc11x_target_frq(unsigned int pred_freq,
 
 	index = s5pc11x_cpufreq_index;
         
-        DBG("spc5pc110_unlock_dvfs_high_level freq_tab[index].frequency: %d, index: %d\n", freq_tab[index].frequency, index);
+        DBG("spc5pc110_target_frq freq_tab[index].frequency: %d, index: %d\n", freq_tab[index].frequency, index);
 
 	if(freq_tab[index].frequency == pred_freq) {	
 		if(flag == 1)
@@ -312,7 +312,7 @@ unsigned int s5pc11x_target_frq(unsigned int pred_freq,
 	/*else {
 		index = 0; 
 	}*/
-        DBG("spc5pc110_unlock_dvfs_high_level new index: %d\n", index);
+        DBG("spc5pc110_target_frq new index: %d\n", index);
 
 	if (g_dvfs_high_lock_token) {
 		 if(g_dvfs_fix_lock_limit == true) {
@@ -323,14 +323,14 @@ unsigned int s5pc11x_target_frq(unsigned int pred_freq,
 				index = g_dvfs_high_lock_limit;
 		 }
 	}
-        DBG("spc5pc110_unlock_dvfs_high_level after g_dvfs_high_lock index: %d\n", index);
+        DBG("spc5pc110_target_frq after g_dvfs_high_lock index: %d\n", index);
 
 s5pc11x_target_frq_end:
 	//spin_lock_irqsave(&g_cpufreq_lock, irqflags);
 	index = CLIP_LEVEL(index, s5pc11x_cpufreq_level);
 	s5pc11x_cpufreq_index = index;
 	//spin_unlock_irqrestore(&g_cpufreq_lock, irqflags);
-        DBG("spc5pc110_unlock_dvfs_high_level freq_tab[index].frequency: %d\n", freq_tab[index].frequency);
+        DBG("spc5pc110_target_frq freq_tab[index].frequency: %d\n", freq_tab[index].frequency);
 	
 	freq = freq_tab[index].frequency;
 	

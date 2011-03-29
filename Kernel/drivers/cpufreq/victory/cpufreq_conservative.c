@@ -39,6 +39,8 @@ extern unsigned int s5pc11x_target_frq(unsigned int pred_freq, int flag);
 #define DEF_SAMPLING_FREQ_STEP 5
 #endif
 
+#define DBG(fmt...)
+//#define DBG(fmt...) printk(fmt)
 
 /*
  * The polling frequency of this governor depends on the capability of
@@ -391,7 +393,6 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 #ifndef CONFIG_CPU_S5PV210
 	unsigned int freq_target;
 #endif
-
 	struct cpufreq_policy *policy;
 	unsigned int j;
 
@@ -496,24 +497,29 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	 * policy. To be safe, we focus 10 points under the threshold.
 	 */
 	if (load < (dbs_tuners_ins.down_threshold - 10)) {
+	DBG(KERN_INFO "CPUFREQ: this_dbs_info->requested_freq = %d, policy->min = %d\n", this_dbs_info->requested_freq, policy->min);
 		if (this_dbs_info->requested_freq == policy->min)
 			return;
 #ifndef CONFIG_CPU_S5PV210
 		freq_target = (dbs_tuners_ins.freq_step * policy->max) / 100;
 
 		this_dbs_info->requested_freq -= freq_target;
+
 #else
 		this_dbs_info->requested_freq = s5pc11x_target_frq(this_dbs_info->requested_freq, -1);
 #endif
+	DBG(KERN_INFO "CPUFREQ: after s5pc11x_target_frq this_dbs_info->requested_freq = %d\n", this_dbs_info->requested_freq);
 		if (this_dbs_info->requested_freq < policy->min)
 			this_dbs_info->requested_freq = policy->min;
+	DBG(KERN_INFO "CPUFREQ: after check min this_dbs_info->requested_freq = %d\n", this_dbs_info->requested_freq);
 
 		/*
 		 * if we cannot reduce the frequency anymore, break out early
 		 */
+
 		if (policy->cur == policy->min)
 			return;
-
+	DBG(KERN_INFO "CPUFREQ: before cpufreq_driver_target this_dbs_info->requested_freq = %d\n", this_dbs_info->requested_freq);
 		__cpufreq_driver_target(policy, this_dbs_info->requested_freq,
 				CPUFREQ_RELATION_H);
 		return;
