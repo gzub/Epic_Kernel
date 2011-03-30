@@ -33,6 +33,7 @@
 						"cpufreq-core", msg)
 
 int exp_UV_mV[7];
+extern unsigned int (*frequency_match[2])[4];
 
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
@@ -738,6 +739,19 @@ static ssize_t show_scaling_setspeed(struct cpufreq_policy *policy, char *buf)
 	return policy->governor->show_setspeed(policy, buf);
 }
 
+static ssize_t show_frequency_voltage_table(struct cpufreq_policy *policy, char *buf)
+{
+return sprintf(buf, "%d %d %d\n%d %d %d\n%d %d %d\n%d %d %d\n%d %d %d\n%d %d %d\n%d %d %d\n",
+	frequency_match[0][0][0],frequency_match[0][0][1],frequency_match[0][0][2],
+	frequency_match[0][1][0],frequency_match[0][1][1],frequency_match[0][1][2],
+	frequency_match[0][2][0],frequency_match[0][2][1],frequency_match[0][2][2],
+	frequency_match[0][3][0],frequency_match[0][3][1],frequency_match[0][3][2],
+	frequency_match[0][4][0],frequency_match[0][4][1],frequency_match[0][4][2],
+	frequency_match[0][5][0],frequency_match[0][5][1],frequency_match[0][5][2],
+	frequency_match[0][6][0],frequency_match[0][6][1],frequency_match[0][6][2]
+	);
+}
+
 #define define_one_ro(_name) \
 static struct freq_attr _name = \
 __ATTR(_name, 0444, show_##_name, NULL)
@@ -765,6 +779,7 @@ define_one_rw(scaling_governor);
 define_one_rw(UV_mV_table);
 define_one_rw(scaling_setspeed);
 define_one_rw(scaling_setlog);
+define_one_ro(frequency_voltage_table);
 #if defined SET_AUDIO_LOG
 define_one_rw(set_audio_log);
 #endif
@@ -783,6 +798,7 @@ static struct attribute *default_attrs[] = {
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
 	&scaling_setlog.attr,
+	&frequency_voltage_table.attr,
 #if defined SET_AUDIO_LOG
 	&set_audio_log.attr,
 #endif
@@ -2083,6 +2099,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
 	return ret;
 }
 EXPORT_SYMBOL_GPL(cpufreq_register_driver);
+
+
 
 
 /**
