@@ -54,16 +54,16 @@ struct S5PC110_clk_info {
 
 struct S5PC110_clk_info clk_info[] = {
 {
-//APLL:1120,ARMCLK:1120,A2M:160,HCLK_MSYS:160,MPLL:667,HCLK_PSYS:133.4,HCLK_DSYS:166.75,PCLK_MSYS:80,PCLK_DSYS:83.375,G3D:333.5,PCLK_PSYS:66.7
-	.armclk=1120* MHZ,   //ARMCLK
-	.apllout=1120* MHZ,   //APLL_OUT
-	.apll_mps=((280<<16)|(6<<8)|1),   //APLL m, APLL p, APLL, s
-	.msys_div0=(0|(6<<4)|(6<<8)|(1<<12)),   //APLL_DIV, A2M_DIV, HCLK_MSYS_DIV, PCLK_MSYS_DIV
-	.mpllout=667* MHZ,   //MPLL_OUT
-	.mpll_mps=((667<<16)|(12<<8)|(1)),   //MPLL m, MPLL p, MPLL s
-	.psys_dsys_div0=((3<<16)|(1<<20)|(4<<24)|(1<<28)),   //HCLK_DSYS_DIV, PCLK_DSYS_DIV, HCLK_PSYS_DIV, PCLK_PSYS_DIV
-	.div2val=((1<<0)|(1<<4)|(1<<8)),   //G3D_DIV, MFC_DIV, G2D_DIV
-	.dmc0_div6=(3<<28),   //DMC0_DIV
+//APLL:1120,ARMCLK:1120,A2M:160,HCLK_MSYS:186.66666666666666,MPLL:667,HCLK_PSYS:133.4,HCLK_DSYS:166.75,PCLK_MSYS:93.33333333333333,PCLK_DSYS:83.375,G3D:166.75,PCLK_PSYS:66.7
+.armclk=1120* MHZ,   //ARMCLK
+.apllout=1120* MHZ,   //APLL_OUT
+.apll_mps=((280<<16)|(6<<8)|1),   //APLL m, APLL p, APLL, s
+.msys_div0=(0|(6<<4)|(5<<8)|(1<<12)),   //APLL_DIV, A2M_DIV, HCLK_MSYS_DIV, PCLK_MSYS_DIV
+.mpllout=667* MHZ,   //MPLL_OUT
+.mpll_mps=((667<<16)|(12<<8)|(1)),   //MPLL m, MPLL p, MPLL s
+.psys_dsys_div0=((3<<16)|(1<<20)|(4<<24)|(1<<28)),   //HCLK_DSYS_DIV, PCLK_DSYS_DIV, HCLK_PSYS_DIV, PCLK_PSYS_DIV
+.div2val=((3<<0)|(1<<4)|(1<<8)),   //G3D_DIV, MFC_DIV, G2D_DIV
+.dmc0_div6=(3<<28),   //DMC0_DIV
 },
 {
 	// APLL:1000,ARMCLK:1000,HCLK_MSYS:200,MPLL:667,HCLK_DSYS:166,HCLK_PSYS:133,PCLK_MSYS:100,PCLK_DSYS:83,PCLK_PSYS:66
@@ -492,7 +492,7 @@ int s5pc11x_armclk_set_rate(struct clk *clk, unsigned long rate)
 	/* validate target frequency */ 
 	if(clk_info[index].armclk != rate)
 	{
-		DBG("=DVFS ERR target_freq (%d) != cpu_tab_freq (%d)\n", clk_info[index].armclk, rate);
+		DBG("=DVFS ERR target_freq (%d) != cpu_tab_freq (%ld)\n", clk_info[index].armclk, rate);
 		return 0;
 	}
 
@@ -3350,7 +3350,7 @@ void __init_or_cpufreq s5pv210_setup_clocks(void)
 	unsigned long mpll;
 	unsigned long epll;
 	u32 clkdiv0, clkdiv1;
-	struct clk *clk_mmc;
+//	struct clk *clk_mmc;
 	struct clk *pSclk_mdnie;
 
 	clk_fout_epll.enable = s5pv210_epll_enable;
