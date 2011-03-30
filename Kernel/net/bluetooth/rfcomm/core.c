@@ -281,7 +281,7 @@ static void rfcomm_dlc_clear_state(struct rfcomm_dlc *d)
 	d->mscex      = 0;
 	d->mtu        = RFCOMM_DEFAULT_MTU;
 	d->v24_sig    = RFCOMM_V24_RTC | RFCOMM_V24_RTR | RFCOMM_V24_DV;
-
+	d->sec_level  = BT_SECURITY_LOW;
 	d->cfc        = RFCOMM_CFC_DISABLED;
 	d->rx_credits = RFCOMM_DEFAULT_CREDITS;
 }
@@ -1112,7 +1112,8 @@ static int rfcomm_recv_ua(struct rfcomm_session *s, u8 dlci)
 
 		case BT_DISCONN:
 			if (s->sock->sk->sk_state != BT_CLOSED)
-				rfcomm_session_put(s);
+				if (list_empty(&s->dlcs))
+					rfcomm_session_put(s);
 			break;
 		}
 	}
