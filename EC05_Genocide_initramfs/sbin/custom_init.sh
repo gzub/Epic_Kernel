@@ -2,7 +2,10 @@
 # Originally written by tanimn for Twilight Zone Kernel 1.0.3
 # Modified by Rodderik for Genocide Kernel
 
-# Do Customizations
+# Enable logging if desired -- Taken from SpeedMod Kernel 
+if /sbin/busybox [ "`grep ANDROIDLOGGER /system/etc/tweaks.conf`" ]; then
+  insmod /lib/modules/logger.ko
+fi
 
 # Control printk logging
 echo "4 6 1 4" >/proc/sys/kernel/printk
