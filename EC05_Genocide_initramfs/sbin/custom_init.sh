@@ -10,6 +10,9 @@ fi
 # Control printk logging
 echo "4 6 1 4" >/proc/sys/kernel/printk
 
+# Control printk logging
+echo "4 6 1 4" >/proc/sys/kernel/printk
+
 # Remount filesystems RW
 
 busybox mount -o remount,rw /
