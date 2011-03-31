@@ -207,7 +207,7 @@ extern void TSP_forced_release(void);
 void  touchkey_work_func(struct work_struct * p)
 {
 	u8 data[3];
-printk("touchkey workqueue %s\n",__func__);
+	//printk("touchkey workqueue %s\n",__func__);
 if(!gpio_get_value(_3_GPIO_TOUCH_INT))
 {
 	if(i2c_touchkey_read(KEYCODE_REG, &data, 1) < 0)
@@ -226,14 +226,14 @@ if(!gpio_get_value(_3_GPIO_TOUCH_INT))
 	{
 		input_report_key(touchkey_driver->input_dev, touchkey_keycode[data[0] & KEYCODE_BIT], 0);
 		input_sync(touchkey_driver->input_dev);
-                printk(" touchkey release keycode: %d\n", touchkey_keycode[data[0] & KEYCODE_BIT]); 
+                //printk(" touchkey release keycode: %d\n", touchkey_keycode[data[0] & KEYCODE_BIT]); 
 	}
 	else
 	{
 
                if(touch_state_val == 1)
 		{
-			printk(KERN_DEBUG "touchkey pressed but don't send event because touch is pressed. \n");
+			//printk(KERN_DEBUG "touchkey pressed but don't send event because touch is pressed. \n");
 			//set_touchkey_debug('P');
                 }
                 else
@@ -244,7 +244,7 @@ if(!gpio_get_value(_3_GPIO_TOUCH_INT))
 				}
 		input_report_key(touchkey_driver->input_dev, touchkey_keycode[data[0] & KEYCODE_BIT],1);
 		input_sync(touchkey_driver->input_dev);
-                printk(" touchkey press keycode: %d\n", touchkey_keycode[data[0] & KEYCODE_BIT]);
+                //printk(" touchkey press keycode: %d\n", touchkey_keycode[data[0] & KEYCODE_BIT]);
                }
 	}
 }
@@ -557,7 +557,7 @@ static ssize_t touch_led_control(struct device *dev, struct device_attribute *at
 {
 	unsigned char data;
 	if(sscanf(buf, "%d\n", &data) == 1) {
-              printk("touch_led_control: %d \n", data);
+              //printk("touch_led_control: %d \n", data);
 	        i2c_touchkey_write(&data, 1);
 
 #if 0  //suik_check
