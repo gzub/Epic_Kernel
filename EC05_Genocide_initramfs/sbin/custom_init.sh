@@ -14,10 +14,18 @@ busybox mount -o remount,rw /system
 /sbin/busybox --install -s /system/bin
 sync
 
-# Lock the CPU down til SetCPU or such can set it.
+#Samsung dpram modules
+mknod 0666 /dev/dpram0 c 255 1
+mknod 0666 /dev/dpram1 c 255 2
+mknod 0666 /dev/dpramerr c 255 0
+mknod 0666 /dev/ttyCDMA0 c 240 1
 
-echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-echo 1000000 > /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
+#ppp modules
+mknod 0660 /dev/ppp c 108 0
+
+# Lock the CPU down til SetCPU or such can set it.
+echo 1120000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
 
 # Switch to Conservative CPU governor after bootup
 
@@ -68,7 +76,6 @@ fi
 # fi
 
 # fix busybox DNS while system is read-write
-
 if [ ! -f "/system/etc/resolv.conf" ]; then
 	echo "nameserver 8.8.8.8" >> /system/etc/resolv.conf
 	echo "nameserver 8.8.8.4" >> /system/etc/resolv.conf

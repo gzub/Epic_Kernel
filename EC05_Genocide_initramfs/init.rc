@@ -34,10 +34,10 @@ loglevel 1
 # end of bootsnd
 
 #samsung dpram modules
-    mknod 0666 /dev/dpram0 c 255 1
-    mknod 0666 /dev/dpram1 c 255 2
-    mknod 0666 /dev/dpramerr c 255 0
-    mknod 0666 /dev/ttyCDMA0 c 240 1
+#    mknod 0666 /dev/dpram0 c 255 1
+#    mknod 0666 /dev/dpram1 c 255 2
+#    mknod 0666 /dev/dpramerr c 255 0
+#    mknod 0666 /dev/ttyCDMA0 c 240 1
 
 # Create cgroup mount point for cpu accounting
     mkdir /acct
@@ -45,7 +45,7 @@ loglevel 1
     mkdir /acct/uid
 
 # ppp modules
-    mknod 0660 /dev/ppp c 108 0
+#    mknod 0660 /dev/ppp c 108 0
 
 # Insert all modules here
     mkdir /lib/modules
@@ -131,7 +131,7 @@ loglevel 1
     mount ext4 /dev/block/stl9 /system noatime nodiratime errors=continue nobh data=writeback barrier=0 noauto_da_alloc
 
 # We chown/chmod /data again so because mount is run as root + defaults
-     mount ext4 /dev/block/stl10 /data nosuid nodev noatime nodiratime errors=continue nobh data=writeback barrier=0 noauto_da_alloc
+    mount ext4 /dev/block/stl10 /data nosuid nodev noatime nodiratime errors=continue nobh data=writeback barrier=0 noauto_da_alloc
     chown system system /data
     chmod 0771 /data
 
@@ -288,6 +288,11 @@ loglevel 1
 
 
 on boot
+# Kernel moves UART control to MODEM during boot. Put it back to PDA so we can continue capturing log output.
+
+    write /sys/class/sec/switch/uart_sel PDA
+    write /sys/class/sec/switch/usb_sel PDA
+
 # basic network init
     ifup lo
     hostname localhost
@@ -450,7 +455,7 @@ on boot
 ## Daemon processes to be run by init.
 ##
 service console /system/bin/sh
-   user shell
+    user shell
     group shell system log
     console
 
@@ -489,7 +494,6 @@ on property:persist.service.slate_mode=1
 on property:persist.service.slate_mode=0
     write /sys/class/power_supply/battery/batt_slate_mode 0
     
-
 # 3D init
 service pvrsrvinit /system/bin/pvrsrvinit
     user root
@@ -507,7 +511,8 @@ service servicemanager /system/bin/servicemanager
 
 service vold /system/bin/vold
     socket vold stream 0660 root mount
-    ioprio be 2
+# ioprio not supported by our version of init
+#    ioprio be 2
 
 service notified_event /system/bin/notified_event
     user system
@@ -683,18 +688,16 @@ on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
 
 on property:init.svc.dhcpcd=stopped
-    dhcpcd -k eth0
+    /system/bin/dhcpcd -k eth0
 # end of wifi
 
 # for Mobile AP
 service mobileAP /system/bin/wlp2pservice
-
-chmod 555 /system/etc/mobileap/enable_ppp.sh
-chmod 555 /system/etc/mobileap/enable_uwbr.sh
-chmod 555 /system/etc/mobileap/enable_eth.sh
-chmod 555 /system/etc/mobileap/initialize_nat.sh
-chmod 555 /system/etc/mobileap/tethering_enable.sh
-
+    #chmod 555 /system/etc/mobileap/enable_ppp.sh
+    #chmod 555 /system/etc/mobileap/enable_uwbr.sh
+    #chmod 555 /system/etc/mobileap/enable_eth.sh
+    #chmod 555 /system/etc/mobileap/initialize_nat.sh
+    #chmod 555 /system/etc/mobileap/tethering_enable.sh
 # end of Mobile AP
 
 service dumpstate /system/bin/dumpstate -s
@@ -719,22 +722,21 @@ service pcInternet_off /system/bin/sh /data/data/com.android.samsung.IcsService/
     oneshot
         
 on property:service.dhcp.enable=1
-chmod 777 /data/data/com.android.samsung.IcsService/dhcp/udhcpd.conf
-chmod 777 /data/data/com.android.samsung.IcsService/dhcp/udhcpd.leases
-chmod 777 /data/data/com.android.samsung.IcsService/dhcp/udhcpd.pid
-start udhcpd
+    chmod 777 /data/data/com.android.samsung.IcsService/dhcp/udhcpd.conf
+    chmod 777 /data/data/com.android.samsung.IcsService/dhcp/udhcpd.leases
+    chmod 777 /data/data/com.android.samsung.IcsService/dhcp/udhcpd.pid
+    start udhcpd
 
 on property:service.iptables.configure=1
-chmod 777 /data/data/com.android.samsung.IcsService/conf/iptablesConfig.sh
-start pcInternet_on
+    chmod 777 /data/data/com.android.samsung.IcsService/conf/iptablesConfig.sh
+    start pcInternet_on
 
 on property:service.dhcp.enable=0
-stop udhcpd
+    stop udhcpd
 
 on property:service.iptables.configure=0
-chmod 777 /data/data/com.android.samsung.IcsService/conf/iptablesFlush.sh
-start pcInternet_off
-
+    chmod 777 /data/data/com.android.samsung.IcsService/conf/iptablesFlush.sh
+    start pcInternet_off
 #end of PCInternet share
 
 # [Yongha for Victory WiMAX DHCP 20100208
@@ -751,22 +753,5 @@ service wimax_route /system/bin/route add default dev uwbr0
 
 # hyunjoo, for ip renew.
 service wimax_renew /system/bin/dhcpcd -n uwbr0
-<<<<<<< HEAD:EB13_Genocide_initramfs/init.rc
     disabled
     oneshot
-=======
-disabled
-oneshot
-
-#Lntinfotech
-
-#service iqmsd /system/bin/iqmsd
-#    disabled
-
-#on property:service.iq.active=1
-#    start iqmsd
-
-#on property:service.iq.active=0
-#    stop iqmsd
-
->>>>>>> upstream/master:EC05_Genocide_initramfs/init.rc
