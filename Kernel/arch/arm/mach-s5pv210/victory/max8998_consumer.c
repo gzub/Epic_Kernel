@@ -36,8 +36,8 @@
 #elif defined CONFIG_S5PV210_ATLAS
 #include <mach/atlas/max8998_function.h>
 #endif
-// #define DBG(fmt...)
-#define DBG printk
+#define DBG(fmt...)
+//#define DBG printk
 
 #define PMIC_ARM		0
 #define PMIC_INT		1

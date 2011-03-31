@@ -39,7 +39,7 @@
 
 #include <mach/sec_jack.h>
 
-#define CONFIG_DEBUG_SEC_JACK
+//#define CONFIG_DEBUG_SEC_JACK
 #define SUBJECT "JACK_DRIVER"
 
 #ifdef CONFIG_DEBUG_SEC_JACK
@@ -47,7 +47,7 @@
 	printk ("[ "SUBJECT " (%s,%d) ] " format "\n", __func__, __LINE__, ## __VA_ARGS__);
 
 #else
-#define DEBUG_LOG(format,...)
+#define SEC_JACKDEV_DBG(format,...)
 #endif
 
 #define KEYCODE_SENDEND 248

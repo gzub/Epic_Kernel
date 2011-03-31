@@ -29,8 +29,8 @@
 
 #include <mach/regs-irq.h>
 #include <mach/regs-clock.h>
-#define DBG(fmt...) printk(KERN_DEBUG fmt)
-
+//#define DBG(fmt...) printk(KERN_DEBUG fmt)
+#define DBG(fmt...)
 void s5pv210_cpu_suspend(void)
 {
 	unsigned long tmp;

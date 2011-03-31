@@ -34,8 +34,8 @@
 #include <mach/regs-audss.h>
 #include <mach/cpu-freq-v210.h>
 
-// #define DBG(fmt...) 
-#define DBG(fmt...) printk(fmt)
+#define DBG(fmt...) 
+//#define DBG(fmt...) printk(fmt)
 #define CLK_DIV_CHANGE_BY_STEP 0
 #define MAX_DVFS_LEVEL  7
 extern unsigned int s5pc11x_cpufreq_index;
