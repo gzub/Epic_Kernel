@@ -32,6 +32,7 @@
 #include <plat/clock-clksrc.h>
 #include <plat/s5pv210.h>
 #include <mach/regs-audss.h>
+#include <mach/cpu-freq-v210.h>
 
 // #define DBG(fmt...) 
 #define DBG(fmt...) printk(fmt)
@@ -52,7 +53,7 @@ struct S5PC110_clk_info {
 };
 
 
-struct S5PC110_clk_info clk_info[] = {
+struct S5PC110_clk_info clk_info[NUM_FREQ] = {
 {
 //APLL:1120,ARMCLK:1120,A2M:186,HCLK_MSYS:186,MPLL:667,HCLK_PSYS:133.4,HCLK_DSYS:166.75,PCLK_MSYS:93.33333333333333,PCLK_DSYS:83.375,G3D:166.75,PCLK_PSYS:66.7
 .armclk=1120* MHZ,   //ARMCLK
@@ -303,6 +304,7 @@ static int s5pv210_clk_ip4_ctrl(struct clk *clk, int enable)
 	return s5p_gatectrl(S5P_CLKGATE_IP4, clk, enable);
 }
 
+#if 0
 #if defined(CONFIG_CPU_S5PV210_EVT1)
 static int s5pv210_clk_ip5_ctrl(struct clk *clk, int enable)
 {
@@ -314,7 +316,7 @@ static int s5pv210_clk_block_ctrl(struct clk *clk, int enable)
 {
 	return s5p_gatectrl(S5P_CLKGATE_BLOCK, clk, enable);
 }
-
+#endif
 static int s5pv210_clk_mask0_ctrl(struct clk *clk, int enable)
 {
 	return s5p_gatectrl(S5P_CLK_SRC_MASK0, clk, enable);

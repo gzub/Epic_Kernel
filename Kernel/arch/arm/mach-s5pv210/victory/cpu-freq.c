@@ -46,11 +46,11 @@
 unsigned int dvfs_change_direction;
 #define CLIP_LEVEL(a, b) (a > b ? b : a)
 
-unsigned int MAXFREQ_LEVEL_SUPPORTED = 7;
-unsigned int S5PC11X_MAXFREQLEVEL = 7;
+unsigned int MAXFREQ_LEVEL_SUPPORTED = NUM_FREQ;
+unsigned int S5PC11X_MAXFREQLEVEL = NUM_FREQ;
 unsigned int S5PC11X_FREQ_TAB;
 static spinlock_t g_dvfslock = SPIN_LOCK_UNLOCKED;
-static unsigned int s5pc11x_cpufreq_level = 7;
+static unsigned int s5pc11x_cpufreq_level = NUM_FREQ;
 unsigned int s5pc11x_cpufreq_index = 0;
 
 static char cpufreq_governor_name[CPUFREQ_NAME_LEN] = "conservative";// default governor
@@ -79,7 +79,7 @@ extern int store_up_down_threshold(unsigned int down_threshold_value,
 				unsigned int up_threshold_value);
 
 /* frequency */
-static struct cpufreq_frequency_table s5pc110_freq_table_1GHZ[] = {
+static struct cpufreq_frequency_table s5pc110_freq_table_1GHZ[NUM_FREQ+1] = {
 	{L0, 1120*1000},
 	{L1, 1000*1000},
 	{L2, 800*1000},
@@ -91,27 +91,25 @@ static struct cpufreq_frequency_table s5pc110_freq_table_1GHZ[] = {
 };
 
 /*Assigning different index for fast scaling up*/
-static unsigned char transition_state_1GHZ[][2] = {
+static unsigned char transition_state_1GHZ[NUM_FREQ+1][2] = {
         {1, 0}, //Down 0 to 1 Up 0 to 0
         {2, 0}, //Down 1 to 2 Up 1 to 0
         {3, 1}, //Down 2 to 3 Up 2 to 1
         {4, 2}, //Down 3 to 4 up 3 to 2
         {5, 3}, //Down 4 to 5 up 4 to 3
         {6, 4}, //Down 5 to 6 up 5 to 4       
-        {7, 4}, //Down 6 to 7 up 6 to 4       
 };
-
+#if 0
 /* frequency */
 static struct cpufreq_frequency_table s5pc110_freq_table_1d2GHZ[] = { //notused
-	{L0, 1200*1000},
-	{L1, 1000*1000},
-	{L2, 800*1000},
-	{L3, 400*1000},
+	{L0, 1000*1000},
+	{L1, 800*1000},
+	{L2, 400*1000},
+	{L3, 300*1000},
 	{L4, 200*1000},
 	{L5, 100*1000},
 	{0, CPUFREQ_TABLE_END},
 };
-
 /*Assigning different index for fast scaling up*/
 static unsigned char transition_state_1d2GHZ[][2] = {
         {1, 0}, //Down 0 to 1 Up 0 to 0
@@ -121,40 +119,28 @@ static unsigned char transition_state_1d2GHZ[][2] = {
         {5, 3}, //Down 4 to 5 up 4 to 3
         {6, 4}, //Down 5 to 6 up 5 to 4       
 };
+#endif
 
 
-static unsigned char (*transition_state[2])[2] = {
+static unsigned char (*transition_state[])[2] = {
         transition_state_1GHZ,
-        transition_state_1d2GHZ,
 };
 
 static struct cpufreq_frequency_table *s5pc110_freq_table[] = {
         s5pc110_freq_table_1GHZ,
-        s5pc110_freq_table_1d2GHZ,
 };
 
-static unsigned int s5pc110_thres_table_1GHZ[][2] = {
+static unsigned int s5pc110_thres_table_1GHZ[NUM_FREQ][2] = {
       	{70, 90},
       	{60, 80},
       	{50, 80},
         {50, 90},
         {50, 90},
         {40, 90},
-        {20, 80},
 };
 
-static unsigned int s5pc110_thres_table_1d2GHZ[][2] = { //notused
-      	{30, 70},
-        {30, 70},
-        {30, 70},
-        {30, 70},
-        {30, 70},
-        {30, 70},
-};
-
-static unsigned int  (*s5pc110_thres_table[2])[2] = {
+static unsigned int  (*s5pc110_thres_table[])[2] = {
 	s5pc110_thres_table_1GHZ,
-	s5pc110_thres_table_1d2GHZ,
 };
 
 /*return performance level */
@@ -205,7 +191,7 @@ static int get_dvfs_perf_level(enum freq_level_states freq_level, unsigned int *
 
 
 // for active high with event from TS and key
-static int dvfs_perf_lock = 0;
+//static int dvfs_perf_lock = 0;
 int dvfs_change_quick = 0;
 
 // jump to the given performance level

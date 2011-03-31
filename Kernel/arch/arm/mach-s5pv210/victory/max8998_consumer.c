@@ -63,7 +63,7 @@ unsigned int S5PC11X_FREQ_TAB = 1;
 #define RAMP_RATE 10 // 10mv/usec
 unsigned int step_curr;
 
-extern int exp_UV_mV[7];
+extern int exp_UV_mV[NUM_FREQ];
 
 enum PMIC_VOLTAGE {
 	VOUT_0_75,
@@ -86,9 +86,8 @@ enum PMIC_VOLTAGE {
 
 
 /* frequency voltage matching table */
-static const unsigned int frequency_match_1GHZ[][4] = {
+static const unsigned int frequency_match_1GHZ[NUM_FREQ][4] = {
 /* frequency, Mathced VDD ARM voltage , Matched VDD INT*/
-#if 1
         {1120000, 1275, 1100, 0},
         {1000000, 1225, 1100, 1},
         {800000, 1175, 1100, 2},
@@ -96,15 +95,8 @@ static const unsigned int frequency_match_1GHZ[][4] = {
         {400000, 1025, 1100, 4},
         {200000, 925, 1100, 5},
         {100000, 925, 1000, 6},
-#else //just for dvs test
-        {1000000, 1250, 1100, 0},
-        {800000, 1250, 1100, 1},
-        {400000, 1250, 1100, 2},
-        {200000, 1250, 1100, 4},
-        {100000, 950, 1000, 5},
-#endif
 };
-
+#if 0
 static const unsigned int frequency_match_800MHZ[][4] = {
 /* frequency, Mathced VDD ARM voltage , Matched VDD INT*/
         {800000, 1200, 1100, 0},
@@ -112,37 +104,20 @@ static const unsigned int frequency_match_800MHZ[][4] = {
         {200000, 950, 1100, 3},
         {100000, 950, 1000, 4},
 };
-const unsigned int (*frequency_match[2])[4] = {
-        frequency_match_1GHZ,
-        frequency_match_800MHZ,
-};
-
-#if 0
-/*  voltage table */
-static const unsigned int voltage_table[28] = {
-	750, 800, 850, 900, 925, 950, 975, 1000, 1025, 1050,
-	1075, 1100, 1125, 1150, 1175, 1200, 1225, 1250, 1275,
-	1300, 1325, 1350, 1375, 1400, 1425, 1450, 1475, 1500
-};
 #endif
+const unsigned int (*frequency_match[])[4] = {
+        frequency_match_1GHZ,
+};
 
 extern unsigned int S5PC11X_FREQ_TAB;
-//extern const unsigned int (*frequency_match[2])[4];
 
 static struct regulator *Reg_Arm = NULL, *Reg_Int = NULL;
 
 static unsigned int s_arm_voltage=0, s_int_voltage=0;
 
 #ifndef DECREASE_DVFS_DELAY
-/*only 4 Arm voltages and 2 internal voltages possible*/
-static const unsigned int dvs_volt_table_800MHZ[][3] = {
-        {L0, DVSARM3, DVSINT1},
-        {L1, DVSARM3, DVSINT1},
-        {L2, DVSARM4, DVSINT1},
-        {L3, DVSARM4, DVSINT2},
-};
 
-static const unsigned int dvs_volt_table_1GHZ[][3] = {
+static const unsigned int dvs_volt_table_1GHZ[MAX_FREQ][3] = {
         {L0, DVSARM1, DVSINT1}, // 1.12ghz
         {L1, DVSARM1, DVSINT1}, // 1.0ghz
         {L2, DVSARM2, DVSINT1}, // 800mhz
@@ -153,9 +128,8 @@ static const unsigned int dvs_volt_table_1GHZ[][3] = {
 };
 
 
-const unsigned int (*dvs_volt_table[2])[3] = {
+const unsigned int (*dvs_volt_table[])[3] = {
         dvs_volt_table_1GHZ,
-        dvs_volt_table_800MHZ,
 };
 
 static const unsigned int dvs_arm_voltage_set[][2] = {
@@ -346,15 +320,6 @@ int set_gpio_dvs(enum perf_level p_lv)
             //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT | PMIC_SET3_BIT), S5PV210_GPH0DAT);
              //BUCK_1_EN_A disabled
             gpio_set_value(S5PV210_GPB(6),0);
-            // BUCK_1_EN_B enabled
-            gpio_set_value(S5PV210_GPB(3),1);
-            //BUCK_2_EN enabled
-            gpio_set_value(S5PV210_GPB(7),1);
-            break;
-        case L7:
-            //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT | PMIC_SET3_BIT), S5PV210_GPH0DAT);
-             //BUCK_1_EN_A enabled
-            gpio_set_value(S5PV210_GPB(6),1);
             // BUCK_1_EN_B enabled
             gpio_set_value(S5PV210_GPB(3),1);
             //BUCK_2_EN enabled

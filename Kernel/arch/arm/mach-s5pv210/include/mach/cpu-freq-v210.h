@@ -11,14 +11,13 @@
 
 //extern void s5pc110_lock_power_domain(unsigned int nToken);
 
-#define MAXIMUM_FREQ 1300000
+#define MAXIMUM_FREQ 1120000
 #define USE_FREQ_TABLE
-//#undef USE_DVS
 #define USE_DVS
 #define VERY_HI_RATE  800*1000*1000
 #define APLL_GEN_CLK  800*1000
 #define KHZ_T		1000
-
+#define NUM_FREQ 7
 #define MPU_CLK		"armclk"
 
 #define INDX_ERROR  65535
@@ -31,7 +30,6 @@ enum perf_level {
 	L4,
 	L5,
 	L6,
-	L7,
 };
 
 enum freq_level_states {
@@ -59,7 +57,7 @@ extern int set_voltage_dvs(enum perf_level p_lv);
 extern int s5pc110_dvfs_lock_high_hclk(unsigned int dToken);
 extern int s5pc110_dvfs_unlock_high_hclk(unsigned int dToken);
 
-#define NUMBER_OF_LOCKTOKEN 9
+#define NUMBER_OF_LOCKTOKEN 7
 
 #define DVFS_LOCK_TOKEN_1	 0
 #define DVFS_LOCK_TOKEN_2	 1
@@ -68,8 +66,6 @@ extern int s5pc110_dvfs_unlock_high_hclk(unsigned int dToken);
 #define DVFS_LOCK_TOKEN_5	 4
 #define DVFS_LOCK_TOKEN_6	 5
 #define DVFS_LOCK_TOKEN_7	 6
-#define DVFS_LOCK_TOKEN_8	 7
-#define DVFS_LOCK_TOKEN_9	 8
 
 void s5pc110_lock_dvfs_high_level(unsigned int nToken, enum freq_level_states freq_level);
 void s5pc110_unlock_dvfs_high_level(unsigned int nToken);
