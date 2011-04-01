@@ -803,7 +803,10 @@ static int s3c_consumer_resume(struct platform_device *dev)
 
 	max8998_ldo_enable_direct(MAX8998_DCDC1);
 	max8998_ldo_enable_direct(MAX8998_DCDC2);
-	//max8998_ldo_enable_direct(MAX8998_DCDC3);
+
+	/* RAM Voltage adjustment via richardtrip and koxudaxi */
+	max8998_ldo_set_voltage_direct(MAX8998_DCDC3, 1600000, 1600000);
+	max8998_ldo_enable_direct(MAX8998_DCDC3);
 	//max8998_ldo_enable_direct(MAX8998_DCDC4);
 
 	// done in BL code.
