@@ -36,14 +36,14 @@
 #elif defined CONFIG_S5PV210_ATLAS
 #include <mach/atlas/max8998_function.h>
 #endif
-#define DBG(fmt...)
-//#define DBG printk
+//#define DBG(fmt...)
+#define DBG printk
 
 #define PMIC_ARM		0
 #define PMIC_INT		1
 #define PMIC_BOTH		2
 
-#define DECREASE_DVFS_DELAY
+//#define DECREASE_DVFS_DELAY
 
 #ifdef DECREASE_DVFS_DELAY
 #define PMIC_SET_MASK   (0x38) //(0x7 << 3)
@@ -51,9 +51,9 @@
 #define PMIC_SET2_BIT   (0x10) //(0x1 << 4)
 #define PMIC_SET3_BIT   (0x20) //(0x1 << 5)
 #else
-#define PMIC_ARM_MASK		(0x3 << 3)
-#define PMIC_SET1_HIGH		(0x1 << 3)
-#define PMIC_SET2_HIGH		(0x1 << 4)
+#define PMIC_ARM_MASK	(0x18)	//(0x3 << 3)
+#define PMIC_SET1_HIGH	(0x8)	//(0x1 << 3)
+#define PMIC_SET2_HIGH	(0x10)	//(0x1 << 4)
 #endif
 
 #ifndef CONFIG_CPU_FREQ
@@ -66,22 +66,22 @@ unsigned int step_curr;
 extern int exp_UV_mV[NUM_FREQ];
 
 enum PMIC_VOLTAGE {
-	VOUT_0_75,
-	VOUT_0_80,
-	VOUT_0_85,
-	VOUT_0_90,
-	VOUT_0_95,
-	VOUT_1_00,
-	VOUT_1_05,
-	VOUT_1_10,
-	VOUT_1_15,
-	VOUT_1_20,
-	VOUT_1_25,
-	VOUT_1_30,
-	VOUT_1_35,
-	VOUT_1_40,
-	VOUT_1_45,
-	VOUT_1_50
+VOUT_0_75,
+VOUT_0_80,
+VOUT_0_85,
+VOUT_0_90,
+VOUT_0_95,
+VOUT_1_00,
+VOUT_1_05,
+VOUT_1_10,
+VOUT_1_15,
+VOUT_1_20,
+VOUT_1_25,
+VOUT_1_30,
+VOUT_1_35,
+VOUT_1_40,
+VOUT_1_45,
+VOUT_1_50
 };
 
 
@@ -96,20 +96,29 @@ static const unsigned int frequency_match_1GHZ[NUM_FREQ][4] = {
         {200000, 925, 1100, 5},
         {100000, 925, 1000, 6},
 };
-#if 0
-static const unsigned int frequency_match_800MHZ[][4] = {
-/* frequency, Mathced VDD ARM voltage , Matched VDD INT*/
-        {800000, 1200, 1100, 0},
-        {400000, 1050, 1100, 1},
-        {200000, 950, 1100, 3},
-        {100000, 950, 1000, 4},
-};
-#endif
 const unsigned int (*frequency_match[])[4] = {
         frequency_match_1GHZ,
 };
 
 extern unsigned int S5PC11X_FREQ_TAB;
+
+extern u32 ControllerControlRegister0;
+extern u32 ControllerControlRegister1;
+extern u32 MemoryControlRegister0;
+extern u32 MemoryControlRegister1;
+extern u32 TimingRegister0;
+extern u32 TimingRegister1;
+extern u32 ACTimingRegisterRow0;
+extern u32 ACTimingRegisterRow1;
+extern u32 ACTimingRegisterData0;
+extern u32 ACTimingRegisterData1;
+
+extern u32 modTimingRegister0;
+extern u32 modTimingRegister1;
+extern u32 modACTimingRegisterRow0;
+extern u32 modACTimingRegisterRow1;
+extern u32 modACTimingRegisterData0;
+extern u32 modACTimingRegisterData1;
 
 static struct regulator *Reg_Arm = NULL, *Reg_Int = NULL;
 
@@ -117,7 +126,7 @@ static unsigned int s_arm_voltage=0, s_int_voltage=0;
 
 #ifndef DECREASE_DVFS_DELAY
 
-static const unsigned int dvs_volt_table_1GHZ[MAX_FREQ][3] = {
+static const unsigned int dvs_volt_table_1GHZ[NUM_FREQ][3] = {
         {L0, DVSARM1, DVSINT1}, // 1.12ghz
         {L1, DVSARM1, DVSINT1}, // 1.0ghz
         {L2, DVSARM2, DVSINT1}, // 800mhz
@@ -142,6 +151,171 @@ static const unsigned int dvs_arm_voltage_set[][2] = {
 };
 #endif
 
+//Controller Control Register (ConControl, R/W, Address = 0xF000_0000, 0xF140_0000)
+u32 readControllerControlRegister0(int param){
+ return __raw_readl(S5P_VA_DMC0);
+}
+
+u32 readControllerControlRegister1(int param){
+ return __raw_readl(S5P_VA_DMC1);
+}
+
+//Memory Control Register (MemControl, R/W, Address = 0xF000_0004, 0xF140_0004)
+u32 readMemoryControlRegister0(int param){
+ return __raw_readl(S5P_VA_DMC0);
+}
+
+u32 readMemoryControlRegister1(int param){
+ return __raw_readl(S5P_VA_DMC1);
+}
+
+//AC Timing Register for Auto Refresh of memory (TimingAref, R/W, Address = 0xF000_0030,0xF140_0030)
+u32 readTimingRegister0(int param){
+ return __raw_readl(S5P_VA_DMC0 + 0x30);
+}
+
+u32 readTimingRegister1(int param){
+ return __raw_readl(S5P_VA_DMC1 + 0x30);
+}
+
+//AC Timing Register for the Row of memory (TimingRow, R/W, Address = 0xF000_0034,0xF140_0034)
+u32 readACTimingRegisterRow0(int param){
+ return __raw_readl(S5P_VA_DMC0 + 0x34);
+}
+
+u32 readACTimingRegisterRow1(int param){
+ return __raw_readl(S5P_VA_DMC1 + 0x34);
+}
+
+//AC Timing Register for the Data of memory (TimingData, R/W, Address = 0xF000_0038,0xF140_0038)
+u32 readACTimingRegisterData0(int param){
+ return __raw_readl(S5P_VA_DMC0 + 0x38);
+}
+
+u32 readACTimingRegisterData1(int param){
+ return __raw_readl(S5P_VA_DMC1 + 0x38);
+}
+
+//write
+//Controller Control Register (ConControl, R/W, Address = 0xF000_0000, 0xF140_0000)
+void writeControllerControlRegister0(u32 val){
+  __raw_writel(val,S5P_VA_DMC0);
+}
+
+void writeControllerControlRegister1(u32 val){
+  __raw_writel(val,S5P_VA_DMC1);
+}
+
+//Memory Control Register (MemControl, R/W, Address = 0xF000_0004, 0xF140_0004)
+void writeMemoryControlRegister0(u32 val){
+  __raw_writel(val,S5P_VA_DMC0);
+}
+
+void writeMemoryControlRegister1(u32 val){
+  __raw_writel(val,S5P_VA_DMC1);
+}
+
+//AC Timing Register for Auto Refresh of memory (TimingAref, R/W, Address = 0xF000_0030,0xF140_0030)
+void writeTimingRegister0(u32 val){
+  __raw_writel(val,S5P_VA_DMC0 + 0x30);
+}
+
+void writeTimingRegister1(u32 val){
+  __raw_writel(val,S5P_VA_DMC1 + 0x30);
+}
+
+//AC Timing Register for the Row of memory (TimingRow, R/W, Address = 0xF000_0034,0xF140_0034)
+void writeACTimingRegisterRow0(u32 val){
+  __raw_writel(val,S5P_VA_DMC0 + 0x34);
+}
+
+void writeACTimingRegisterRow1(u32 val){
+  __raw_writel(val,S5P_VA_DMC1 + 0x34);
+}
+
+//AC Timing Register for the Data of memory (TimingData, R/W, Address = 0xF000_0038,0xF140_0038)
+void writeACTimingRegisterData0(u32 val){
+  __raw_writel(val,S5P_VA_DMC0 + 0x38);
+}
+
+void writeACTimingRegisterData1(u32 val){
+  __raw_writel(val,S5P_VA_DMC1 + 0x38);
+}
+
+static void writeMemoryData(int param){
+
+	if(modTimingRegister0 != 0){
+		writeTimingRegister0(modTimingRegister0);
+		modTimingRegister0 = 0;
+	}
+	if(modTimingRegister1 != 0){
+		writeTimingRegister1(modTimingRegister1);
+		modTimingRegister1 = 0;
+	}
+
+	if(modACTimingRegisterRow0 != 0){
+		writeTimingRegister0(modACTimingRegisterRow0);
+		modACTimingRegisterRow0 = 0;
+	}
+	if(modACTimingRegisterRow1 != 0){
+		writeTimingRegister1(modACTimingRegisterRow1);
+		modACTimingRegisterRow1 = 0;
+	}
+
+	if(modACTimingRegisterData0 != 0){
+		writeACTimingRegisterData0(modACTimingRegisterData0);
+		modACTimingRegisterData0 = 0;
+	}
+	if(modACTimingRegisterData1 != 0){
+		writeACTimingRegisterData1(modACTimingRegisterData1);
+		modACTimingRegisterData1 = 0;
+	}
+}
+
+static void readMemoryData(int param){
+	u32 reg_value;
+
+	reg_value = readControllerControlRegister0(0);
+	if(ControllerControlRegister0 != reg_value)
+		ControllerControlRegister0 = reg_value;
+
+	reg_value = readControllerControlRegister1(0);
+	if(ControllerControlRegister1 != reg_value)
+		ControllerControlRegister1 = reg_value;
+
+	reg_value = readMemoryControlRegister0(0);
+	if(MemoryControlRegister0 != reg_value)
+		MemoryControlRegister0 = reg_value;
+
+	reg_value = readMemoryControlRegister1(0);
+	if(MemoryControlRegister1 != reg_value)
+		MemoryControlRegister1 = reg_value;
+
+	reg_value = readTimingRegister0(0);
+	if(TimingRegister0 != reg_value)
+		TimingRegister0 = reg_value;
+
+	reg_value = readTimingRegister1(0);
+	if(TimingRegister1 != reg_value)
+		TimingRegister1 = reg_value;
+
+	reg_value = readACTimingRegisterRow0(0);
+	if(ACTimingRegisterRow0 != reg_value)
+		ACTimingRegisterRow0 = reg_value;
+
+	reg_value = readACTimingRegisterRow1(0);
+	if(ACTimingRegisterRow1 != reg_value)
+		ACTimingRegisterRow1 = reg_value;
+
+	reg_value = readACTimingRegisterData0(0);
+	if(ACTimingRegisterData0 != reg_value)
+		ACTimingRegisterData0 = reg_value;
+
+	reg_value = readACTimingRegisterData1(0);
+	if(ACTimingRegisterData1 != reg_value)
+		ACTimingRegisterData1 = reg_value;
+}
+
 static int set_max8998(unsigned int pwr, enum perf_level p_lv)
 {
 	int voltage;
@@ -149,41 +323,64 @@ static int set_max8998(unsigned int pwr, enum perf_level p_lv)
 	int ret = 0;
 	const unsigned int (*frequency_match_tab)[4] = frequency_match[S5PC11X_FREQ_TAB];
 
-	DBG("%s : p_lv = %d : pwr = %d \n", __FUNCTION__, p_lv,pwr);
+//	DBG("%s : p_lv = %d : pwr = %d \n", __FUNCTION__, p_lv,pwr);
+        writeMemoryData(0);
+        readMemoryData(0);
 
 	if(pwr == PMIC_ARM) {
-		voltage = frequency_match_tab[p_lv][pwr] - exp_UV_mV[p_lv];
+		voltage = frequency_match_tab[p_lv][pwr + 1] - exp_UV_mV[p_lv];
 
-		if(voltage == s_arm_voltage)
-			return ret;
 
-		pmic_val = voltage * 1000;
+                if(voltage == s_arm_voltage)
+                        return ret;
 
-		DBG("regulator_set_voltage =%d\n",voltage);
-		/*set Arm voltage*/
-		ret = regulator_set_voltage(Reg_Arm,pmic_val,pmic_val);
-	        if(ret != 0)
-        	{
-			printk(KERN_ERR "%s: Cannot set VCC_ARM\n", __func__);
-			return -EINVAL;
-        	}
-		/*put delay according to ramp rate*/
-		//udelay(20);
-		if(voltage > s_arm_voltage)
-			udelay((voltage - s_arm_voltage)/RAMP_RATE);
-		else
-			udelay((s_arm_voltage - voltage)/RAMP_RATE);
 
-		s_arm_voltage = voltage;
+                switch(p_lv)
+             {
+
+                case L0:
+                case L1:
+                case L2:
+                case L3:
+                case L4:
+                    max8998_set_dvsarm_direct(DVSARM1, voltage);
+                    break;
+                case L5:
+                case L6:
+                    max8998_set_dvsarm_direct(DVSARM2, voltage);
+                    break;
+               }
+
+
+               pmic_val = voltage * 1000;
+
+//             DBG("regulator_set_voltage =%d\n",voltage);
+               // printk(KERN_NOTICE "regulator_set_voltage =%dmA @ %dMHz-%d UV=%d\n",voltage,frequency_match_tab[p_lv][pwr]/1000,p_lv,exp_UV_mV[p_lv]);
+//             DBG("regulator_set_voltage =%dmA @ %dMHz-%d UV=%d\n",voltage,frequency_match_tab[p_lv][pwr]/1000,p_lv,exp_UV_mV[p_lv]);
+               /*set Arm voltage*/
+               ret = regulator_set_voltage(Reg_Arm,pmic_val,pmic_val);
+               if(ret != 0)
+               {
+                       printk(KERN_ERR "%s: Cannot set VCC_ARM\n", __func__);
+                       return -EINVAL;
+               }
+               /*put delay according to ramp rate*/
+               //udelay(20);
+               if(voltage > s_arm_voltage)
+                       udelay((voltage - s_arm_voltage)/RAMP_RATE);
+               else
+                       udelay((s_arm_voltage - voltage)/RAMP_RATE);
+
+               s_arm_voltage = voltage;
 
 	} else if(pwr == PMIC_INT) {
-		voltage = frequency_match_tab[p_lv][pwr];
+		voltage = frequency_match_tab[p_lv][pwr + 1];
 		if(voltage == s_int_voltage)
                         return ret;
 
 		pmic_val = voltage * 1000;
 
-		DBG("regulator_set_voltage = %d\n",voltage);
+		//DBG("regulator_set_voltage = %d\n",voltage);
 		/*set Arm voltage*/
 		ret = regulator_set_voltage(Reg_Int, pmic_val, pmic_val);
 	        if(ret != 0)
@@ -240,7 +437,7 @@ EXPORT_SYMBOL_GPL(set_pmic_gpio);
 
 int set_voltage(enum perf_level p_lv)
 {
-	DBG("%s : p_lv = %d\n", __FUNCTION__, p_lv);
+	//DBG("%s : p_lv = %d\n", __FUNCTION__, p_lv);
 	if(step_curr != p_lv)
 	{
 		/*Commenting gpio initialisation*/
@@ -258,46 +455,14 @@ EXPORT_SYMBOL(set_voltage);
 #ifdef DECREASE_DVFS_DELAY
 int set_gpio_dvs(enum perf_level p_lv)
 {
-	switch(p_lv)
+        const unsigned int (*frequency_match_tab)[4] = frequency_match[S5PC11X_FREQ_TAB];
+
+        switch(p_lv)
     {
         case L0:
-            //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK)                                                ), S5PV210_GPH0DAT);
-            //BUCK_1_EN_A disabled
-            gpio_set_value(S5PV210_GPB(6),0);
-            // BUCK_1_EN_B disabled
-            gpio_set_value(S5PV210_GPB(3),0);
-            //BUCK_2_EN disabled
-            gpio_set_value(S5PV210_GPB(7),0);
-            
-            break;
         case L1:
-           // writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT                                ), S5PV210_GPH0DAT);
-            //BUCK_1_EN_A enabled
-            gpio_set_value(S5PV210_GPB(6),1);
-            // BUCK_1_EN_B disabled
-            gpio_set_value(S5PV210_GPB(3),0);
-            //BUCK_2_EN disabled
-            gpio_set_value(S5PV210_GPB(7),0);
-           
-            break;
         case L2:
-            //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK)                 | PMIC_SET2_BIT                ), S5PV210_GPH0DAT);
-             //BUCK_1_EN_A disabled
-            gpio_set_value(S5PV210_GPB(6),0);
-            // BUCK_1_EN_B enabled
-            gpio_set_value(S5PV210_GPB(3),1);
-            //BUCK_2_EN disabled
-            gpio_set_value(S5PV210_GPB(7),0);
-            break;
         case L3:
-           // writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT                ), S5PV210_GPH0DAT);
-             //BUCK_1_EN_A enabled
-            gpio_set_value(S5PV210_GPB(6),1);
-            // BUCK_1_EN_B enabled
-            gpio_set_value(S5PV210_GPB(3),1);
-            //BUCK_2_EN disabled
-            gpio_set_value(S5PV210_GPB(7),0);
-            break;
         case L4:
             //writel(((readl(S5PV210_GPH0DAT) & ~PMIC_SET_MASK) | PMIC_SET1_BIT | PMIC_SET2_BIT | PMIC_SET3_BIT), S5PV210_GPH0DAT);
              //BUCK_1_EN_A disabled
@@ -328,45 +493,56 @@ int set_gpio_dvs(enum perf_level p_lv)
         default:
             pr_err("[PWR] %s : Invalid parameters (%d)\n", __func__, p_lv);
             return -EINVAL;
-	}
+        }
 
-	DBG("[PWR] %s : GPH0DAT=%x, GPH0CON=%x, GPH0PUD=%x\n",__func__, readl(S5PV210_GPH0DAT), readl(S5PV210_GPH0CON), readl(S5PV210_GPH0PUD));
+        DBG("[PWR] %s : GPH0DAT=%x, GPH0CON=%x, GPH0PUD=%x\n",__func__, readl(S5PV210_GPH0DAT), readl(S5PV210_GPH0CON), readl(S5PV210_GPH0PUD));
 
-	return 0;
+        return 0;
 }
 #else
 int set_gpio_dvs(int armSet)
 {
-	DBG("set dvs with %d\n", armSet);
-		switch(armSet) {
-		case DVSARM1:
-			gpio_set_value(set1_gpio, 0);
-			gpio_set_value(set2_gpio, 0);
-			break;
-		case DVSARM2:
-			gpio_set_value(set2_gpio, 0);
-			gpio_set_value(set1_gpio, 1);
-			break;
-		case DVSARM3:
-			gpio_set_value(set1_gpio, 0);
-			gpio_set_value(set2_gpio, 1);
-			break;
-		case DVSARM4:
-			gpio_set_value(set1_gpio, 1);
-			gpio_set_value(set2_gpio, 1);
-			break;
-		case DVSINT1:
-			gpio_set_value(set3_gpio, 0);
-			break;
-		case DVSINT2:
-			gpio_set_value(set3_gpio, 1);
-			break;
-		default:
-			printk("Invalid parameters to %s\n",__FUNCTION__);
-		return -EINVAL;
-		}
+        unsigned int curPmicArm = readl(S5PV210_GPH0DAT);
+        DBG("set dvs with %d\n", armSet);
+        switch(armSet) {
+        case DVSARM1:
+                curPmicArm = curPmicArm & ~(PMIC_ARM_MASK); //set GPH0[3],GPH0[4] low
+                writel(curPmicArm,S5PV210_GPH0DAT);
+                //gpio_set_value(GPIO_BUCK_1_EN_A, 0);
+                //gpio_set_value(GPIO_BUCK_1_EN_B, 0);
+                break;
+        case DVSARM2:
+                curPmicArm = (curPmicArm & ~(PMIC_ARM_MASK)) | PMIC_SET1_HIGH; //set GPH0[3] high, GPH0[4] low
+                writel(curPmicArm,S5PV210_GPH0DAT);
+                //gpio_set_value(GPIO_BUCK_1_EN_B, 0);
+                //gpio_set_value(GPIO_BUCK_1_EN_A, 1);
+                break;
+        case DVSARM3:
+                curPmicArm = (curPmicArm & ~(PMIC_ARM_MASK)) | PMIC_SET2_HIGH; //set GPH0[3] low, GPH0[4] high
+                 writel(curPmicArm,S5PV210_GPH0DAT);
+                 //gpio_set_value(GPIO_BUCK_1_EN_A, 0);
+                 //gpio_set_value(GPIO_BUCK_1_EN_B, 1);
+                 break;
+        case DVSARM4:
+                 curPmicArm = (curPmicArm & ~(PMIC_ARM_MASK)) | PMIC_SET1_HIGH | PMIC_SET2_HIGH; //set GPH0[3],GPH0[4] high
+                 writel(curPmicArm,S5PV210_GPH0DAT);
+                //gpio_set_value(GPIO_BUCK_1_EN_A, 1);
+                //gpio_set_value(GPIO_BUCK_1_EN_B, 1);
+                break;
+        case DVSINT1:
+                gpio_set_value(GPIO_BUCK_2_EN, 0);
+                break;
+        case DVSINT2:
+                gpio_set_value(GPIO_BUCK_2_EN, 1);
+                break;
+        default:
+                printk("Invalid parameters to %s\n",__FUNCTION__);
+                return -EINVAL;
+        }
 
-	return 0;
+        DBG("S5PV210_GPH0CON=%x,S5PV210_GPH0DAT=%x,S5PV210_GPH0PUD=%x\n",readl(S5PV210_GPH0CON),readl(S5PV210_GPH0DAT),readl(S5PV210_GPH0PUD));
+
+return 0;
 }
 #endif
 
@@ -395,7 +571,8 @@ int set_voltage_dvs(enum perf_level p_lv)
 	set_gpio_dvs(p_lv);
 	udelay(delay);
 
-	DBG("[PWR] %s : level (%d -> %d), delay (%u)\n", __func__, step_curr, p_lv, delay);
+	//DBG("[PWR] %s : level (%d -> %d), delay (%u)\n", __func__, step_curr, p_lv, delay);
+	DBG("[PWR] %s : level (%d -> %d), delay (%u)\n", __func__, frequency_match_tab[step_curr][0], frequency_match_tab[p_lv][0], delay);
 
 	step_curr = p_lv;
 
@@ -461,7 +638,7 @@ static int max8998_consumer_probe(struct platform_device *pdev)
 {
         int ret = 0;
 #ifdef DECREASE_DVFS_DELAY
-	const unsigned int (*frequency_match_tab)[4] = frequency_match[S5PC11X_FREQ_TAB];
+	unsigned int (*frequency_match_tab)[4] = frequency_match[S5PC11X_FREQ_TAB];
 #endif
 
 	DBG(" Function=%s \n",__func__);
@@ -480,12 +657,12 @@ static int max8998_consumer_probe(struct platform_device *pdev)
 
 	/*initialise the dvs registers*/
 #ifdef DECREASE_DVFS_DELAY
-	max8998_set_dvsarm_direct(DVSARM1, frequency_match_tab[0][1]);
-	max8998_set_dvsarm_direct(DVSARM2, frequency_match_tab[1][1]);
-	max8998_set_dvsarm_direct(DVSARM3, frequency_match_tab[2][1]);
-	max8998_set_dvsarm_direct(DVSARM4, frequency_match_tab[3][1]);
+	max8998_set_dvsarm_direct(DVSARM1, frequency_match_tab[3][1]);
+	max8998_set_dvsarm_direct(DVSARM2, frequency_match_tab[5][1]);
+	max8998_set_dvsarm_direct(DVSARM3, frequency_match_tab[8][1]);
+	max8998_set_dvsarm_direct(DVSARM4, frequency_match_tab[9][1]);
 	max8998_set_dvsint_direct(DVSINT1, frequency_match_tab[0][2]);
-	max8998_set_dvsint_direct(DVSINT2, frequency_match_tab[4][2]);
+	max8998_set_dvsint_direct(DVSINT2, frequency_match_tab[10][2]);
 #else
 	max8998_set_dvsarm_direct(DVSARM1, dvs_arm_voltage_set[0][1]);
 	max8998_set_dvsarm_direct(DVSARM2, dvs_arm_voltage_set[1][1]);

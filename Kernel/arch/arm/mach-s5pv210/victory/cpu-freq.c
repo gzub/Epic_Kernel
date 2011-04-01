@@ -1,3 +1,4 @@
+
 /*
  *  linux/arch/arm/plat-s5pc11x/s5pc11x-cpufreq.c
  *
@@ -774,4 +775,5 @@ static int __init s5pc110_cpufreq_init(void)
 
 //arch_initcall(s5pc110_cpufreq_init);
 module_init(s5pc110_cpufreq_init);
+
 

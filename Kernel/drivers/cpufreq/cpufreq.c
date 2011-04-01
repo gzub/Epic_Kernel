@@ -34,6 +34,28 @@
 
 int exp_UV_mV[7]={0,0,0,0,0,0,0};
 extern unsigned int (*frequency_match[])[4];
+int active_states[7] = {0,1,1,1,1,1};
+int exp_update_states=1;
+
+u32 ControllerControlRegister0 = 0;
+u32 ControllerControlRegister1 = 0;
+
+u32 MemoryControlRegister0 = 0;
+u32 MemoryControlRegister1 = 0;
+u32 TimingRegister0 = 0;
+u32 TimingRegister1 = 0;
+u32 ACTimingRegisterRow0 = 0;
+u32 ACTimingRegisterRow1 = 0;
+u32 ACTimingRegisterData0 = 0;
+u32 ACTimingRegisterData1 = 0;
+
+
+u32 modTimingRegister0 = 0;
+u32 modTimingRegister1 = 0;
+u32 modACTimingRegisterRow0 = 0;
+u32 modACTimingRegisterRow1 = 0;
+u32 modACTimingRegisterData0 = 0;
+u32 modACTimingRegisterData1 = 0;
 
 /**
  * The "cpufreq driver" - the arch- or hardware-dependent low
@@ -561,6 +583,23 @@ static ssize_t store_set_audio_log(struct cpufreq_policy *policy,
 }
 #endif
 
+static ssize_t show_update_states(struct cpufreq_policy *policy, char *buf)
+{
+        return sprintf(buf, "%d\n", exp_update_states);
+}
+
+static ssize_t store_update_states(struct cpufreq_policy *policy,
+                                        const char *buf, size_t count)
+{
+        unsigned int ret = -EINVAL;
+
+        ret = sscanf(buf, "%d", &exp_update_states);
+        if (ret != 1)
+                return -EINVAL;
+        else
+                return count;
+}
+
 /**
  * show_scaling_governor - show the current policy for the specified CPU
  */
@@ -752,6 +791,96 @@ return sprintf(buf, "%d %d %d\n%d %d %d\n%d %d %d\n%d %d %d\n%d %d %d\n%d %d %d\
 	);
 }
 
+static ssize_t show_controller_control_registers(struct cpufreq_policy *policy, char *buf)
+{
+return sprintf(buf, "%d %d\n", ControllerControlRegister0,ControllerControlRegister1);
+// return -EINVAL;
+}
+
+static ssize_t show_memory_control_registers(struct cpufreq_policy *policy, char *buf)
+{
+return sprintf(buf, "%d %d\n", MemoryControlRegister0,MemoryControlRegister1);
+// return -EINVAL;
+}
+
+static ssize_t show_AC_timing_registers_row(struct cpufreq_policy *policy, char *buf)
+{
+return sprintf(buf, "%d %d\n", ACTimingRegisterRow0,ACTimingRegisterRow1);
+// return -EINVAL;
+}
+
+static ssize_t show_AC_timing_registers_data(struct cpufreq_policy *policy, char *buf)
+{
+return sprintf(buf, "%d %d\n", ACTimingRegisterData0,ACTimingRegisterData1);
+// return -EINVAL;
+}
+
+static ssize_t show_timing_registers(struct cpufreq_policy *policy, char *buf)
+{
+return sprintf(buf, "%d %d\n", TimingRegister0,TimingRegister1);
+// return -EINVAL;
+}
+
+static ssize_t store_AC_timing_registers_row(struct cpufreq_policy *policy,
+const char *buf, size_t count)
+{
+unsigned int ret = -EINVAL;
+ret = sscanf(buf, "%d %d", &ACTimingRegisterRow0,&ACTimingRegisterRow1);
+        modACTimingRegisterRow0 = ACTimingRegisterRow0;
+        modACTimingRegisterRow1 = ACTimingRegisterRow1;
+if (ret != 1)
+return -EINVAL;
+else
+return count;
+}
+
+static ssize_t store_AC_timing_registers_data(struct cpufreq_policy *policy,
+const char *buf, size_t count)
+{
+unsigned int ret = -EINVAL;
+ret = sscanf(buf, "%d %d", &ACTimingRegisterData0,&ACTimingRegisterData1);
+        modACTimingRegisterData0 = ACTimingRegisterData0;
+        modACTimingRegisterData1 = ACTimingRegisterData1;
+if (ret != 1)
+return -EINVAL;
+else
+return count;
+}
+
+static ssize_t store_timing_registers(struct cpufreq_policy *policy,
+const char *buf, size_t count)
+{
+unsigned int ret = -EINVAL;
+ret = sscanf(buf, "%d %d", &TimingRegister0,&TimingRegister1);
+        modTimingRegister0 = TimingRegister0;
+        modTimingRegister1 = TimingRegister1;
+if (ret != 1)
+return -EINVAL;
+else
+return count;
+}
+
+static ssize_t show_states_enabled_table(struct cpufreq_policy *policy, char *buf)
+{
+return sprintf(buf, "%d %d %d %d %d %d %d %d %d %d\n", active_states[0],active_states[1],active_states[2],active_states[3],active_states[4],active_states[5],active_states[6],active_states[7],active_states[8],active_states[9]);
+// return sprintf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d\n", active_states[0],active_states[1],active_states[2],active_states[3],active_states[4],active_states[5],active_states[6],active_states[7],active_states[8],active_states[9],active_states[10],active_states[11],active_states[12]);
+// return -EINVAL;
+}
+
+static ssize_t store_states_enabled_table(struct cpufreq_policy *policy,
+const char *buf, size_t count)
+{
+unsigned int ret = -EINVAL;
+
+ret = sscanf(buf, "%d %d %d %d %d %d %d %d %d %d", &active_states[0],&active_states[1],&active_states[2],&active_states[3],&active_states[4],&active_states[5],&active_states[6],&active_states[7],&active_states[8],&active_states[9]);
+// ret = sscanf(buf, "%d %d %d %d %d %d %d %d %d %d %d %d %d", &active_states[0],&active_states[1],&active_states[2],&active_states[3],&active_states[4],&active_states[5],&active_states[6],&active_states[7],&active_states[8],&active_states[9],&active_states[10],&active_states[11],&active_states[12]);
+if (ret != 1)
+return -EINVAL;
+else
+return count;
+
+}
+
 #define define_one_ro(_name) \
 static struct freq_attr _name = \
 __ATTR(_name, 0444, show_##_name, NULL)
@@ -773,13 +902,24 @@ define_one_ro(scaling_driver);
 define_one_ro(scaling_cur_freq);
 define_one_ro(related_cpus);
 define_one_ro(affected_cpus);
+define_one_ro(controller_control_registers);
+define_one_ro(memory_control_registers);
 define_one_rw(scaling_min_freq);
 define_one_rw(scaling_max_freq);
 define_one_rw(scaling_governor);
 define_one_rw(UV_mV_table);
+define_one_rw(states_enabled_table);
+define_one_rw(update_states);
+define_one_rw(timing_registers);
+define_one_rw(AC_timing_registers_row);
+define_one_rw(AC_timing_registers_data);
+define_one_ro(frequency_voltage_table);
+/*
+define_one_rw(ControllerControlRegister0);
+define_one_rw(ControllerControlRegister1);
+*/
 define_one_rw(scaling_setspeed);
 define_one_rw(scaling_setlog);
-define_one_ro(frequency_voltage_table);
 #if defined SET_AUDIO_LOG
 define_one_rw(set_audio_log);
 #endif
@@ -794,11 +934,18 @@ static struct attribute *default_attrs[] = {
 	&related_cpus.attr,
 	&scaling_governor.attr,
 	&UV_mV_table.attr,
+	&states_enabled_table.attr,
+	&update_states.attr,
+	&frequency_voltage_table.attr,
+	&controller_control_registers.attr,
+	&timing_registers.attr,
+	&AC_timing_registers_row.attr,
+	&memory_control_registers.attr,
+	&AC_timing_registers_data.attr,
 	&scaling_driver.attr,
 	&scaling_available_governors.attr,
 	&scaling_setspeed.attr,
 	&scaling_setlog.attr,
-	&frequency_voltage_table.attr,
 #if defined SET_AUDIO_LOG
 	&set_audio_log.attr,
 #endif
