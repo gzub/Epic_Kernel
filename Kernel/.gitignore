@@ -97,4 +97,14 @@ GTAGS
 /scripts/bin2c
 /usr/gen_init_cpio
 /usr/initramfs_data.cpio
-
+.config
+.version
+Module.symvers
+include/config/auto.conf.cmd
+include/linux/autoconf.h
+scripts/basic/docproc
+scripts/basic/fixdep
+scripts/basic/hash
+scripts/kallsyms
+scripts/kconfig/conf
+scripts/mod/modpost
