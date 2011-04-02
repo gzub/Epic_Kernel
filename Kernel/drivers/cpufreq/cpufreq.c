@@ -34,7 +34,7 @@
 
 int exp_UV_mV[7]={0,0,0,0,0,0,0};
 extern unsigned int (*frequency_match[])[4];
-int active_states[7] = {0,1,1,1,1,1};
+int active_states[7] = {0,1,1,1,1,1,1};
 int exp_update_states=1;
 
 u32 ControllerControlRegister0 = 0;
