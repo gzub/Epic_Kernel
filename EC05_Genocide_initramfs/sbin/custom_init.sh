@@ -3,8 +3,10 @@
 # Modified by Rodderik for Genocide Kernel
 
 # Enable logging if desired -- Taken from SpeedMod Kernel 
-if /sbin/busybox [ "`grep ANDROIDLOGGER /system/etc/tweaks.conf`" ]; then
-  insmod /lib/modules/logger.ko
+if /sbin/busybox [ "`grep DISABLELOGGER /system/etc/tweaks.conf`" ]; then
+     echo "Logging disabled" 
+else
+     insmod /lib/modules/logger.ko
 fi
 
 # Control printk logging
@@ -32,6 +34,7 @@ mknod 0660 /dev/ppp c 108 0
 # Lock the CPU down til SetCPU or such can set it.
 echo 1120000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo "0 1 1 1 1 1 1" > /sys/devices/system/cpu/cpu0/cpufreq/states_enabled_table
 
 # Switch to Conservative CPU governor after bootup
 
