@@ -22,7 +22,7 @@
 #include <plat/clock.h>
 #include <plat/clock-clksrc.h>
 #include <plat/cpu-freq.h>
-
+#define DEBUG 1
 static inline struct clksrc_clk *to_clksrc(struct clk *clk)
 {
 	return container_of(clk, struct clksrc_clk, clk);
@@ -200,8 +200,11 @@ void __init s3c_register_clksrc(struct clksrc_clk *clksrc, int size)
 		 * called after the rest of the clocks have been
 		 * registered
 		 */
+#if DEBUG
+		s3c_set_clksrc(clksrc, true);
+#else
 		s3c_set_clksrc(clksrc, false);
-
+#endif
 		ret = s3c24xx_register_clock(&clksrc->clk);
 
 		if (ret < 0) {
