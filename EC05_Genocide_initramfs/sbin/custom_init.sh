@@ -33,8 +33,8 @@ mknod 0660 /dev/ppp c 108 0
 
 # Lock the CPU down til SetCPU or such can set it.
 echo 1120000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-echo 200000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-echo "0 1 1 1 1 1 1" > /sys/devices/system/cpu/cpu0/cpufreq/states_enabled_table
+echo 100000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo "1 1 1 1 1 1 1" > /sys/devices/system/cpu/cpu0/cpufreq/states_enabled_table
 
 # Switch to Conservative CPU governor after bootup
 
