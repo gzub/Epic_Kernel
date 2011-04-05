@@ -36,8 +36,8 @@
 #elif defined CONFIG_S5PV210_ATLAS
 #include <mach/atlas/max8998_function.h>
 #endif
-//#define DBG(fmt...)
-#define DBG printk
+#define DBG(fmt...)
+//#define DBG printk
 
 #define PMIC_ARM		0
 #define PMIC_INT		1
@@ -142,12 +142,12 @@ const unsigned int (*dvs_volt_table[])[3] = {
 };
 
 static const unsigned int dvs_arm_voltage_set[][2] = {
-	{DVSARM1, 1325},
-	{DVSARM2, 1225},
-	{DVSARM3, 1150},
+	{DVSARM1, 1275},
+	{DVSARM2, 1200},
+	{DVSARM3, 1050},
 	{DVSARM4, 950},
 	{DVSINT1, 1100},
-	{DVSINT2, 1075},
+	{DVSINT2, 1000},
 };
 #endif
 
