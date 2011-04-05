@@ -138,6 +138,7 @@ static unsigned int s5pc110_thres_table_1GHZ[NUM_FREQ][2] = {
         {50, 90},
         {50, 90},
         {40, 90},
+        {20, 80},
 };
 
 static unsigned int  (*s5pc110_thres_table[])[2] = {
