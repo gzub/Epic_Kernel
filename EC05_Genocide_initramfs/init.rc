@@ -5,7 +5,7 @@ sysclktz 0
 loglevel 1
 
 # setup the global environment
-    export PATH /sbin:/system/sbin:/system/bin:/system/xbin
+    export PATH /system/sbin:/system/bin:/system/xbin:/sbin
     export LD_LIBRARY_PATH /system/lib:/system/lib/egl
     export ANDROID_BOOTLOGO 1
     export ANDROID_ROOT /system
@@ -235,12 +235,15 @@ loglevel 1
 # create the lost+found directories, so as to enforce our permissions
     mkdir /data/lost+found 0770
     mkdir /cache/lost+found 0770
+    mkdir /system/lost+found 0770
 
 # double check the perms, in case lost+found already exists, and set owner
     chown root root /data/lost+found
     chmod 0770 /data/lost+found
     chown root root /cache/lost+found
     chmod 0770 /cache/lost+found
+    chown root root /system/lost+found
+    chmod 0770 /system/lost+found
   
 # permissions for MTP device node
     chmod 0660 /dev/usb_mtp_gadget
