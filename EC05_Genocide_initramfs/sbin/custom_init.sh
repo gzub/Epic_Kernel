@@ -23,10 +23,10 @@ busybox mount -o remount,rw /system
 sync
 
 #Samsung dpram modules
-mknod 0666 /dev/dpram0 c 255 1
-mknod 0666 /dev/dpram1 c 255 2
-mknod 0666 /dev/dpramerr c 255 0
-mknod 0666 /dev/ttyCDMA0 c 240 1
+mknod 0666 /dev/dpram0 c 252 1
+mknod 0666 /dev/dpram1 c 252 2
+mknod 0666 /dev/dpramerr c 252 0
+mknod 0666 /dev/ttyCDMA0 c 251 1
 
 #ppp modules
 mknod 0660 /dev/ppp c 108 0
@@ -87,7 +87,7 @@ fi
 # fix busybox DNS while system is read-write
 if [ ! -f "/system/etc/resolv.conf" ]; then
 	echo "nameserver 8.8.8.8" >> /system/etc/resolv.conf
-	echo "nameserver 8.8.8.4" >> /system/etc/resolv.conf
+	echo "nameserver 8.8.4.4" >> /system/etc/resolv.conf
 fi 
 sync
 
