@@ -764,10 +764,11 @@ static int sec_jack_probe(struct platform_device *pdev)
 	//	det_jack->low_active = 0;
 
 	SEC_JACKDEV_DBG("sec_jack_probe HWREV =%d, 0x01=%d jack->low_active =%d", HWREV, 0x01, det_jack->low_active);
-
+        gpio_request(GPIO_MICBIAS_EN, "MICBIAS_EN");
 	gpio_direction_output(GPIO_MICBIAS_EN,1);
 	s3c_gpio_slp_cfgpin(GPIO_MICBIAS_EN, S3C_GPIO_SLP_PREV);
 
+        gpio_request(GPIO_POPUP_SW_EN, "POPUP_SW_EN");
 	gpio_direction_output(GPIO_POPUP_SW_EN,1);  //POPUP_SW_EN  //suik_Fix
 	//s3c_gpio_slp_cfgpin(GPIO_POPUP_SW_EN, S3C_GPIO_SLP_PREV);
 
