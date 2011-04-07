@@ -31,19 +31,10 @@ loglevel 1
 # bootsnd
     setprop audioflinger.bootsnd 1
 
-#samsung dpram modules
-#    mknod 0666 /dev/dpram0 c 255 1
-#    mknod 0666 /dev/dpram1 c 255 2
-#    mknod 0666 /dev/dpramerr c 255 0
-#    mknod 0666 /dev/ttyCDMA0 c 240 1
-
 # Create cgroup mount point for cpu accounting
     mkdir /acct
     mount cgroup none /acct cpuacct
     mkdir /acct/uid
-
-# ppp modules
-#    mknod 0660 /dev/ppp c 108 0
 
 # Insert all modules here
     mkdir /lib/modules
@@ -515,10 +506,6 @@ service notified_event /system/bin/notified_event
 service netd /system/bin/netd
     socket netd stream 0660 root system
 
-service nexus /system/bin/nexus
-    socket nexus stream 0660 root system
-    disabled
-
 service debuggerd /system/bin/debuggerd
 
 service ril-daemon /system/bin/rild
@@ -638,12 +625,6 @@ service pbap /system/bin/sdptool add --channel=19 PBAP
 service installd /system/bin/installd
     socket installd stream 600 system system
 
-# to update incremental image of recovery partition
-service flash_recovery /system/bin/sh /system/etc/install-recovery.sh
-    user root
-    console
-    oneshot
-
 #magnetic sensor yamaha
 service sensor-daemon /system/bin/sensorserver_yamaha
     user compass
@@ -673,9 +654,6 @@ service immvibed /system/bin/immvibed
     group shell
     oneshot
 
-service immvbsd /system/bin/immvbsd
-    oneshot
-
 # to enable wifi
 on property:init.svc.wpa_supplicant=stopped
     stop dhcpcd
@@ -684,15 +662,6 @@ on property:init.svc.wpa_supplicant=stopped
 #on property:init.svc.dhcpcd=stopped
 #    /system/bin/dhcpcd -k eth0
 # end of wifi
-
-# for Mobile AP
-service mobileAP /system/bin/wlp2pservice
-    #chmod 555 /system/etc/mobileap/enable_ppp.sh
-    #chmod 555 /system/etc/mobileap/enable_uwbr.sh
-    #chmod 555 /system/etc/mobileap/enable_eth.sh
-    #chmod 555 /system/etc/mobileap/initialize_nat.sh
-    #chmod 555 /system/etc/mobileap/tethering_enable.sh
-# end of Mobile AP
 
 service dumpstate /system/bin/dumpstate -s
     socket dumpstate stream 0660 shell log
