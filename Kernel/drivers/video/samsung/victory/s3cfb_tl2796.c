@@ -710,7 +710,7 @@ static int s5p_bl_update_status(struct backlight_device* bd)
 			gamma_value = 0;
 		}
 
-		pr_err("brightness =  %d, gamma = %d\n",bd->props.brightness, gamma_value);
+		//pr_err("brightness =  %d, gamma = %d\n",bd->props.brightness, gamma_value);
 
 		bd_brightness = bd->props.brightness;
 		backlight_level = level;

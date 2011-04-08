@@ -1146,7 +1146,7 @@ void mmc_rescan(struct work_struct *work)
 	/*
 	 * First we search for SDIO...
 	 */
-	printk(KERN_DEBUG "*** DEBUG : First we search for SDIO...(%d)***\n", host->index);
+	//printk(KERN_DEBUG "*** DEBUG : First we search for SDIO...(%d)***\n", host->index);
 	err = mmc_send_io_op_cond(host, 0, &ocr);
 	if (!err) {
 		if (mmc_attach_sdio(host, ocr))
@@ -1158,7 +1158,7 @@ void mmc_rescan(struct work_struct *work)
 	/*
 	 * ...then normal SD...
 	 */
-	printk(KERN_DEBUG "*** DEBUG : ...then normal SD...(%d) ***\n", host->index);
+	//printk(KERN_DEBUG "*** DEBUG : ...then normal SD...(%d) ***\n", host->index);
 	err = mmc_send_app_op_cond(host, 0, &ocr);
 	if (!err) {
 		if (mmc_attach_sd(host, ocr))
@@ -1170,7 +1170,7 @@ void mmc_rescan(struct work_struct *work)
 	/*
 	 * ...and finally MMC.
 	 */
-	printk(KERN_DEBUG "*** DEBUG : ...and finally MMC. (%d)***\n", host->index);
+	//printk(KERN_DEBUG "*** DEBUG : ...and finally MMC. (%d)***\n", host->index);
 	err = mmc_send_op_cond(host, 0, &ocr);
 	if (!err) {
 		if (mmc_attach_mmc(host, ocr))
