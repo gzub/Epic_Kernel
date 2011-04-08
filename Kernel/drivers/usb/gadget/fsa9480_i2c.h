@@ -180,6 +180,7 @@
 #define USBSTATUS_ADB					0x10
 #define USBSTATUS_DM					0x20
 #define USBSTATUS_ACM					0x30
+#define USBSTATUS_RNDIS				0x40
 #define USBSTATUS_SAMSUNG_KIES_REAL	0x80
 
 
@@ -330,5 +331,3 @@ typedef enum
 	SEC_CAR_DOCK_DEVICE			= 0x01 << 1,
 }USB_DOCK_TYPE;
 #endif
-
-
