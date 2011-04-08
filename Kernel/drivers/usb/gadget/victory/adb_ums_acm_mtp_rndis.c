@@ -592,7 +592,7 @@ int ums_mount_status = 0;
 int askonstatus = 0;
 int inaskonstatus=0;
 static int prev_status_before_adb;  // previous USB setting before using ADB
-static int prev_status_before_vtp;  // previous USB setting before using VTP
+static int prev_status_before_rndis;  // previous USB setting before using RNDIS
 static int prev_enable_status;  // previous USB setting
 extern int mtp_mode_on;
 extern int usb_on;
@@ -689,13 +689,13 @@ recheck:
 				prev_enable_status = prev_status_before_adb = 0; //reset
 				goto recheck;
 				}
-			if(prev_enable_status == USBSTATUS_VTP && prev_status_before_vtp != USBSTATUS_UMS) { //mkasick fix
-				printk("[USB] %s - prev_status(0x%02x), prev_status_before_vtp setting(0x%02x)\n",
-						__func__, prev_enable_status, prev_status_before_vtp);
-				enable = prev_status_before_vtp;  // set previous status
-				prev_enable_status = prev_status_before_vtp = 0; //reset
+			if(prev_enable_status == USBSTATUS_RNDIS && prev_status_before_rndis != USBSTATUS_UMS) {
+				printk("[USB] %s - prev_status(0x%02x), prev_status_before_rndis setting(0x%02x)\n",
+						__func__, prev_enable_status, prev_status_before_rndis);
+				enable = prev_status_before_rndis;  // set previous status
+				prev_enable_status = prev_status_before_rndis = 0; //reset
 				goto recheck;
-				}
+			}
 
 
 			ret = usb_change_config(dev->cdev, &ums_only_config);
@@ -712,6 +712,15 @@ recheck:
 			ret = usb_change_config(dev->cdev, &acm_ums_adb_config);
 			if (ret) {
 				printk("[%s] Fail to acm_ums_adb_config()\n", __func__);
+			}
+			dev->adb_enabled = enable;
+		}
+		else if(enable == USBSTATUS_RNDIS)
+		{
+			prev_status_before_rndis = prev_enable_status;
+			ret = usb_change_config(dev->cdev, &rndis_only_config);
+			if (ret) {
+				printk("[%s] Fail to rndis_only_config()\n", __func__);
 			}
 			dev->adb_enabled = enable;
 		}
