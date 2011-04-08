@@ -667,13 +667,12 @@ recheck:
 				}
 		dev->adb_enabled = enable;
 #else
-		mtp_mode_on = 0;
-			prev_status_before_vtp = prev_enable_status;
-        ret = usb_change_config(dev->cdev, &rndis_only_config);
-			if (ret) {
-				printk("[%s] Fail to rndis_only_config()\n", __func__);
-			}
-			dev->adb_enabled = enable;
+			mtp_mode_on = 0;
+      ret = usb_change_config(dev->cdev, &rndis_only_config);
+      if (ret) {
+        printk("[%s] Fail to rndis_only_config()\n", __func__);
+      }
+      dev->adb_enabled = enable;
 #endif
 		}
 #endif
@@ -688,7 +687,6 @@ recheck:
 				enable = prev_status_before_adb;  // set previous status
 				prev_enable_status = prev_status_before_adb = 0; //reset
 				goto recheck;
-				}
      }
      if(prev_enable_status == USBSTATUS_RNDIS && prev_status_before_rndis != USBSTATUS_UMS) {
        printk("[USB] %s - prev_status(0x%02x), prev_status_before_rndis setting(0x%02x)\n",
