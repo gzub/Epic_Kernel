@@ -232,6 +232,7 @@ int audio_init(void)
 	//b4 : AP Gpio emul, B5 : CODEC_XTAL_EN
 
 	s3c_gpio_slp_setpull_updown(GPIO_CODEC_LDO_EN, S3C_GPIO_PULL_NONE);
+        gpio_request(GPIO_PCM_SEL, "PCM_SEL");
         gpio_direction_output(GPIO_PCM_SEL, 0);
         s3c_gpio_setpull(GPIO_PCM_SEL, S3C_GPIO_PULL_NONE);
         gpio_set_value(GPIO_PCM_SEL, 0);
