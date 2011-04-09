@@ -108,3 +108,12 @@ scripts/basic/hash
 scripts/kallsyms
 scripts/kconfig/conf
 scripts/mod/modpost
+include/asm
+include/linux/utsrelease.h
+scripts/conmakehash
+scripts/kconfig/lex.zconf.c
+scripts/kconfig/zconf.hash.c
+scripts/kconfig/zconf.tab.c
+scripts/mod/elfconfig.h
+scripts/mod/mk_elfconfig
+
