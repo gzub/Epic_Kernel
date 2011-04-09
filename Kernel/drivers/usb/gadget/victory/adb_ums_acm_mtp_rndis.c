@@ -1099,3 +1099,7 @@ static void __exit cleanup(void)
 	gserial_cleanup();
 }
 module_exit(cleanup);
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/master
