@@ -3089,7 +3089,7 @@ void maxim_charging_control(unsigned int dev_type  , unsigned int cmd,int uichar
 	else if(dev_type==PM_CHARGER_TA)
 	{
 		// hanapark_Victory (2010.05.12)
-		reg_buff[0] = (0x0 <<5) |(0x3 << 3) |(0x6<<0) ; // CHG_TOPOFF_TH=10%, CHG_RST_HYS=Disable, AC_FCGH=600mA
+		reg_buff[0] = (0x0 <<5) |(0x3 << 3) |(0x5<<0) ; // CHG_TOPOFF_TH=10%, CHG_RST_HYS=Disable, AC_FCGH=600mA
 		reg_buff[1] = (0x2<<6) |(0x3<<4) | (0x0<<3) | (0x0<<1) | (0x0<<0); //ESAFEOUT1,2= 10, FCHG_TMR=disable, MBAT_REG_TH=4.2V, MBATT_THERM_REG=105C
 #ifdef CONFIG_KERNEL_DEBUG_SEC
 		kernel_sec_clear_upload_magic_number();	// hanapark_DF01
@@ -3101,7 +3101,7 @@ void maxim_charging_control(unsigned int dev_type  , unsigned int cmd,int uichar
 	{	
 		value = FSA9480_PMIC_CP_USB();
 		// hanapark_Victory (2010.05.12)
-		reg_buff[0] = (0x0 <<5) |(0x3 << 3) |(0x3<<0) ; // CHG_TOPOFF_TH=10%, CHG_RST_HYS=Disable, AC_FCGH=380mA
+		reg_buff[0] = (0x0 <<5) |(0x3 << 3) |(0x1<<0) ; // CHG_TOPOFF_TH=10%, CHG_RST_HYS=Disable, AC_FCGH=380mA
 		if(value){
 			if (askonstatus)
 			reg_buff[1] = (0x1<<6) |(0x3<<4) | (0x0<<3) | (0x0<<1) | (0x0<<0); //ESAFEOUT1,2= 01, FCHG_TMR=disable, MBAT_REG_TH=4.2V, MBATT_THERM_REG=105C

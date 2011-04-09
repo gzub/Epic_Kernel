@@ -430,15 +430,6 @@ static void check_chg_current(struct power_supply *bat_ps)
 		else	// non-test mode (interval 2 sec)
 #endif
 			cnt += 2;
-		if (s3c_bat_info.bat_info.batt_vol >= OVER_CHARGE_COND_VOLTAGE) {
-			printk(KERN_INFO "[BATT] nubernel: :%s: OVER_CHARGE_COND_VOLTAGE hit (bat_vol = %d) (bat_current = %d) \n", __func__, 
-				s3c_bat_info.bat_info.batt_vol, s3c_bat_info.bat_info.batt_current);
-			s3c_set_chg_en(0);//Set charge off
-			s3c_bat_info.bat_info.batt_is_full = 1;
-			force_update = 1;
-		}
-		printk(KERN_INFO "[BATT] nubernel: :%s: CHG_CURRENT_COUNT: %d, bat_vol = %d, bat_current = %d \n", 
-			__func__, cnt, s3c_bat_info.bat_info.batt_vol, s3c_bat_info.bat_info.batt_current);
 
 		if (cnt >= CHG_CURRENT_COUNT)
 		{
@@ -449,20 +440,8 @@ static void check_chg_current(struct power_supply *bat_ps)
 			cnt = 0;
 		}
 	} else {
-		if (s3c_bat_info.bat_info.batt_vol >= OVER_CHARGE_COND_VOLTAGE) {
-			printk(KERN_INFO "[BATT] nubernel: :%s: OVER_CHARGE_COND_VOLTAGE hit (bat_vol = %d) (bat_current = %d) \n", __func__, 
-				s3c_bat_info.bat_info.batt_vol, s3c_bat_info.bat_info.batt_current);
-			s3c_set_chg_en(0);//Set charge off
-			s3c_bat_info.bat_info.batt_is_full = 1;
-			force_update = 1;
-		}
 		cnt = 0;
 	}
-
-	printk(KERN_INFO "[BATT] nubernel: :%s: full: %u, recharging: %u, level: %u, voltage: %d, current: %d, temp: %d, crgEnabled: %u, crgSource: %u \n",
-		__func__, s3c_bat_info.bat_info.batt_is_full, s3c_bat_info.bat_info.batt_is_recharging, s3c_bat_info.bat_info.level, 
-		s3c_bat_info.bat_info.batt_vol, s3c_bat_info.bat_info.batt_current, s3c_bat_info.bat_info.batt_temp,
-		s3c_bat_info.bat_info.charging_enabled, s3c_bat_info.bat_info.charging_source);
 }
 #endif /* __CHECK_CHG_CURRENT__ */
 
