@@ -331,8 +331,3 @@ typedef enum
 	SEC_CAR_DOCK_DEVICE			= 0x01 << 1,
 }USB_DOCK_TYPE;
 #endif
-<<<<<<< HEAD
-
-
-=======
->>>>>>> upstream/master
