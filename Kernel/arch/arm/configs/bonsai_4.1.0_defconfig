@@ -1,7 +1,5 @@
 #
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.32.9
-# Thu Dec  9 11:44:24 2010
+# Bonsai v4.1.x kernel series config
 #
 CONFIG_ARM=y
 # CONFIG_S5PV210_ATLAS is not set
@@ -32,19 +30,9 @@ CONFIG_CONSTRUCTORS=y
 #
 # General setup
 #
-##########
-# Custom Debug
-##########
-CONFIG_DEBUG_SECTION_MISMATCH=y
-
-##########
-# Custom setup
-##########
 CONFIG_BLK_DEV_INITRD=y
 #CONFIG_INITRAMFS_COMPRESSION_NONE is not set
-
-CONFIG_INITRAMFS_SOURCE="/snapshot/Android/dev/bonsai-dev/initramfs"
-#CONFIG_INITRAMFS_SOURCE="/snapshot/Android/dev/bonsai-dev/initramfs.recovery"
+CONFIG_INITRAMFS_SOURCE="/snapshot/Android/dev/bonsai_android_initramfs/initramfs_SPH-D700/"
 
 CONFIG_INITRAMFS_ROOT_UID=1000
 CONFIG_INITRAMFS_ROOT_GID=1000
@@ -68,7 +56,7 @@ CONFIG_SYSVIPC_SYSCTL=y
 #
 # RCU Subsystem
 #
-CONFIG_TREE_RCU=y
+# CONFIG_TREE_RCU is not set
 CONFIG_TINY_RCU=y
 # CONFIG_TREE_PREEMPT_RCU is not set
 # CONFIG_RCU_TRACE is not set
@@ -729,8 +717,9 @@ CONFIG_AF_RXRPC=y
 # CONFIG_AF_RXRPC_DEBUG is not set
 # CONFIG_RXKAD is not set
 CONFIG_WIRELESS=y
-# CONFIG_CFG80211 is not set
-CONFIG_CFG80211_DEFAULT_PS_VALUE=0
+CONFIG_CFG80211=y
+CONFIG_CFG80211_DEFAULT_PS=y
+#CONFIG_CFG80211_DEFAULT_PS_VALUE=0
 # CONFIG_WIRELESS_OLD_REGULATORY is not set
 CONFIG_WIRELESS_EXT=y
 CONFIG_WIRELESS_EXT_SYSFS=y
@@ -2007,7 +1996,7 @@ CONFIG_OPTICAL_GP2A=y
 # CONFIG_OPTICAL_GP2A_ATLAS is not set
 CONFIG_OPTICAL_GP2A_VICTORY=y
 CONFIG_SAMSUNG_MODULES=m
-CONFIG_J4FS=y
+CONFIG_J4FS=m
 CONFIG_SAMSUNG_PARAM=m
 CONFIG_FM_SI4709=m
 CONFIG_VIBETONZ=m
@@ -2128,7 +2117,7 @@ CONFIG_NETWORK_FILESYSTEMS=y
 # CONFIG_NFS_FS is not set
 # CONFIG_NFSD is not set
 # CONFIG_SMB_FS is not set
-CONFIG_CIFS=y
+CONFIG_CIFS=m
 # CONFIG_CIFS_STATS is not set
 # CONFIG_CIFS_WEAK_PW_HASH is not set
 # CONFIG_CIFS_UPCALL is not set
