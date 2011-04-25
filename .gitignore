@@ -1,16 +1,6 @@
-EC05_Genocide_initramfs/lib/modules/Si4709_driver.ko
-EC05_Genocide_initramfs/lib/modules/bthid.ko
-EC05_Genocide_initramfs/lib/modules/cifs.ko
-EC05_Genocide_initramfs/lib/modules/cmc7xx_sdio.ko
-EC05_Genocide_initramfs/lib/modules/dhd.ko
-EC05_Genocide_initramfs/lib/modules/dpram.ko
-EC05_Genocide_initramfs/lib/modules/dpram_recovery.ko
-EC05_Genocide_initramfs/lib/modules/logger.ko
-EC05_Genocide_initramfs/lib/modules/modemctl.ko
-EC05_Genocide_initramfs/lib/modules/onedram.ko
-EC05_Genocide_initramfs/lib/modules/scsi_wait_scan.ko
-EC05_Genocide_initramfs/lib/modules/svnet.ko
-EC05_Genocide_initramfs/lib/modules/tun.ko
-EC05_Genocide_initramfs/lib/modules/vibrator.ko
-EC05_Genocide_initramfs/lib/modules/wimax_gpio.ko
+EC05_Genocide_initramfs/
+EC05_Genocide_initramfs/*
+Kernel/arch/arm/boot/sph-D700-kernel.tar
+*.diff
+*.patch
 
