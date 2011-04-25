@@ -20,10 +20,10 @@
 #include <mach/regs-clock.h>
 #include <mach/gpio.h>
 #include "wm8994.h"
+#include <mach/sec_jack.h>
 #ifdef CONFIG_SND_VOODOO
 #include "wm8994_voodoo.h"
 #endif
-#include <mach/sec_jack.h>
 //------------------------------------------------
 //		Debug Feature
 //------------------------------------------------
@@ -232,7 +232,6 @@ int audio_init(void)
 	//b4 : AP Gpio emul, B5 : CODEC_XTAL_EN
 
 	s3c_gpio_slp_setpull_updown(GPIO_CODEC_LDO_EN, S3C_GPIO_PULL_NONE);
-        gpio_request(GPIO_PCM_SEL, "PCM_SEL");
         gpio_direction_output(GPIO_PCM_SEL, 0);
         s3c_gpio_setpull(GPIO_PCM_SEL, S3C_GPIO_PULL_NONE);
         gpio_set_value(GPIO_PCM_SEL, 0);
@@ -1163,12 +1162,12 @@ void wm8994_record_main_mic(struct snd_soc_codec *codec)
 					wm8994_write(codec, 0x0029, WM8994_IN1L_TO_MIXINL);	  // Input Mixer 3
 					wm8994_write(codec, 0x0400, (WM8994_AIF1ADC1_VU | TUNING_RECORD_MAIN_AIF1ADCL_VOL));	// AIF1 ADC1 Left Volume
 					wm8994_write(codec, 0x0401, (WM8994_AIF1ADC1_VU | TUNING_RECORD_MAIN_AIF1ADCR_VOL));	// AIF1 ADC1 Right Volume
-		        }
-			}
 
 #ifdef CONFIG_SND_VOODOO_RECORD_PRESETS
- voodoo_hook_record_main_mic();
+					voodoo_hook_record_main_mic();
 #endif
+		        }
+			}
 
 			if(wm8994->recognition_active == REC_ON)
 			{
@@ -2207,7 +2206,6 @@ void wm8994_set_voicecall_receiver(struct snd_soc_codec *codec)
 
     wm8994_write(codec, 0x0039, 0x0068);    // Anti Pop2
     wm8994_write(codec, 0x0001, 0x0003);    // Power Management 1
-	msleep(50);
     wm8994_write(codec, 0x0015, 0x0040);
     wm8994_write(codec, 0x0702, 0x8100);    // GPIO 3. Speech PCM Clock
     wm8994_write(codec, 0x0703, 0x8100);    // GPIO 4. Speech PCM Sync
@@ -2217,31 +2215,34 @@ void wm8994_set_voicecall_receiver(struct snd_soc_codec *codec)
     wm8994_write(codec, 0x0241, 0x2F00);    // FLL2 Control 2
     wm8994_write(codec, 0x0243, 0x0600);    // FLL2 Control 4
     wm8994_write(codec, 0x0240, 0x0001);    // FLL2 Control 1
-	msleep(3);
-
-	/* AIF2 Clocking 1. Clock Source Select */
-	wm8994_write(codec, 0x0204, 0x0008);
     wm8994_write(codec, 0x0208, 0x000F);    // Clocking 1. '0x000A' is added for a playback. (original = 0x0007)
 
-	wm8994_write(codec, 0x0620, 0x0000);    /* Oversampling */
+    wm8994_write(codec, 0x0204, 0x0009);    // AIF2 Clocking 1
     wm8994_write(codec, 0x0211, 0x0003);    // AIF2 Rate
     wm8994_write(codec, 0x0310, 0x4118);    // AIF2 Control 1
     wm8994_write(codec, 0x0311, 0x0000);    // AIF2 Control 2 pcm format is changed ulaw to linear
     wm8994_write(codec, 0x0520, 0x0000);    // AIF2 DAC Filter 1
-	/* AIF2 Clocking 1. AIF2 Clock Enable */
-	wm8994_write(codec, 0x0204, 0x0009);
     wm8994_write(codec, 0x0601, 0x0005);    // DAC1 Left Mixer Routing
     wm8994_write(codec, 0x0602, 0x0001);    //  DAC1 Right Mixer Routing(Playback)
     wm8994_write(codec, 0x0603, 0x018C);    // DAC2 Mixer Volumes
     wm8994_write(codec, 0x0604, 0x0030);    // DAC2 Left Mixer Routing
     wm8994_write(codec, 0x0605, 0x0010);    // DAC2 Right Mixer Routing
     wm8994_write(codec, 0x0621, 0x01C0);    // Sidetone
+    wm8994_write(codec, 0x0620, 0x0000);    // Oversampling
+    //sub mic
     wm8994_write(codec, 0x0002, 0x6240);    // Power Management 2
+    //sub mic
+    wm8994_write(codec, 0x0028, 0x0030);    // Input Mixer 2 30 -> 00
 
     if(!wm8994->testmode_config_flag)
     {
-		wm8994_write(codec, 0x0028, 0x0030);    /* Input Mixer 2 */
-		wm8994_write(codec, 0x0018, 0x010A);
+        /* Left Line Input 1&2 Volume */
+        val = wm8994_read(codec, 0x0018);
+        val &= ~(WM8994_IN1L_MUTE_MASK | WM8994_IN1L_VOL_MASK);
+        val |= (0x0100 | TUNING_CALL_RCV_INPUTMIX_VOL);
+		//sub mic
+	   wm8994_write(codec, 0x0018, 0x010A);
+
 
         /* Output Mixer 5 */
         val = wm8994_read(codec, 0x0031);
@@ -4601,9 +4602,6 @@ void wm8994_set_fmradio_common(struct snd_soc_codec *codec, int onoff)
 			wm8994_write(codec, WM8994_INPUT_MIXER_4, val);
 		}
 	}
-#ifdef CONFIG_SND_VOODOO_FM
- voodoo_hook_fmradio_headset();
-#endif
 }
 
 void wm8994_set_fmradio_headset(struct snd_soc_codec *codec)
@@ -4855,10 +4853,6 @@ void wm8994_set_fmradio_headset(struct snd_soc_codec *codec)
 
 	//DAC1 Unmute
 	wm8994_write(codec, WM8994_AIF1_DAC1_FILTERS_1, 0x0000);
-
-#ifdef CONFIG_SND_VOODOO_FM
- voodoo_hook_fmradio_headset();
-#endif
 
 	val = wm8994_read(codec, WM8994_AIF2_DAC_FILTERS_1);	//520 : 0
 	val &= ~(WM8994_AIF2DAC_MUTE_MASK);
@@ -5118,11 +5112,7 @@ void wm8994_set_fmradio_headset_mix(struct snd_soc_codec *codec)
 		val &= ~(WM8994_DAC1L_MUTE_MASK | WM8994_DAC1L_VOL_MASK);
 		val |= (WM8994_DAC1_VU | TUNING_DAC1L_VOL);
 		wm8994_write(codec,WM8994_DAC1_LEFT_VOLUME ,val);
-
-#ifdef CONFIG_SND_VOODOO_FM
- voodoo_hook_fmradio_headset();
-#endif
-
+		
 		//Unmute and volume ctrl RightDAC
 		val = wm8994_read(codec, WM8994_DAC1_RIGHT_VOLUME );
 		val &= ~(WM8994_DAC1R_MUTE_MASK | WM8994_DAC1R_VOL_MASK);
@@ -5465,10 +5455,6 @@ void wm8994_set_fmradio_speaker_headset_mix(struct snd_soc_codec *codec)
 	wm8994_write(codec,WM8994_DC_SERVO_1, val );
 
 	msleep(20);
-
-#ifdef CONFIG_SND_VOODOO_FM
- voodoo_hook_fmradio_headset();
-#endif
 
 	//* Headphone Output
 		// Intermediate HP settings
