@@ -206,6 +206,9 @@
 #define NR_IRQS		(IRQ_EINT_GROUP22_BASE + IRQ_EINT_GROUP22_NR + 1)
 
 #define HALL_SENSOR_IRQ		IRQ_EINT3
+
+#define FIQ_START	0
+
 //froyo_merge_check
 #define S5PV210_GPIO_A0_INTS    (8)
 #define S5PV210_GPIO_A1_INTS    (4)
