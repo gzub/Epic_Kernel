@@ -3,4 +3,5 @@ EC05_Genocide_initramfs/*
 Kernel/arch/arm/boot/sph-D700-kernel.tar
 *.diff
 *.patch
-
+Kernel/arch/arm/boot/compressed/lib1funcs.S
+Kernel/arch/arm/boot/xipImage
