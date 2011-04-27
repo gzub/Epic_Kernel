@@ -68,10 +68,15 @@ BUILD_KERNEL()
 	pushd $KERNEL_BUILD_DIR
 
 	export KDIR=`pwd`
+	export ARCH=arm
 
-	make ARCH=arm $ANDROID_KERNEL_CONFIG
+	cp $ANDROID_KERNEL_CONFIG $KERNEL_BUILD_DIR/arch/$ARCH/configs/temp_defconfig
+
+	make ARCH=$ARCH temp_defconfig 
 
 	make V=1 -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN/$TOOLCHAIN_PREFIX 2>&1 | tee $COMPILEDBG
+
+	rm $KERNEL_BUILD_DIR/arch/$ARCH/configs/temp_defconfig
 
 	popd
 }
