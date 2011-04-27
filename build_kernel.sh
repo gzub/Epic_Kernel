@@ -26,15 +26,11 @@ fi
 
 TARGET_LOCALE="vzw"
 
-#TOOLCHAIN=/usr/local/toolchain/arm-2009q3/bin
-#TOOLCHAIN=/snapshot/Android/tools/arm-2009q3/bin
-TOOLCHAIN=/snapshot/Android/tools/arm-2009q1/bin
-#TOOLCHAIN=/snapshot/Android/tools/my-android-toolchain/bin
-TOOLCHAIN_PREFIX=arm-none-linux-gnueabi-
-#TOOLCHAIN_PREFIX=arm-linux-androideabi-
+TOOLCHAIN=$ARM_TOOLCHAIN
+TOOLCHAIN_PREFIX=$ARM_TOOLCHAIN_PREFIX
 
-KERNEL_BUILD_DIR=`pwd`/Kernel
-ANDROID_OUT_DIR=`pwd`/Android/out/target/product/SPH-D700
+KERNEL_BUILD_DIR=$ANDROID_KERNEL_BUILD
+ANDROID_OUT_DIR=$ANDROID_SYSTEM_BUILD/out/target/product/epic
 
 export PRJROOT=$PWD
 export PROJECT_NAME
@@ -69,24 +65,15 @@ BUILD_KERNEL()
 	echo "************************************************************"
 	echo
 
-
 	pushd $KERNEL_BUILD_DIR
 
 	export KDIR=`pwd`
 
-#	make ARCH=arm bonsai_3.0.0_defconfig
-#	make ARCH=arm bonsai_3.0.1_defconfig
-#	make ARCH=arm bonsai_4.0.1_defconfig
-	make ARCH=arm bonsai_4.1.0_defconfig
+	make ARCH=arm $ANDROID_KERNEL_CONFIG
 
-	# make kernel
-
-#	make V=1 -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN/$TOOLCHAIN_PREFIX KCFLAGS="-mtune=cortex-a8 -mfpu=neon -ftree-vectorize -mfloat-abi=soft" 2>&1 | tee make.out
-	make V=1 -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN/$TOOLCHAIN_PREFIX 2>&1 | tee make.out
-
+	make V=1 -j$CPU_JOB_NUM ARCH=arm CROSS_COMPILE=$TOOLCHAIN/$TOOLCHAIN_PREFIX 2>&1 | tee $COMPILEDBG
 
 	popd
-	
 }
 
 # print title
