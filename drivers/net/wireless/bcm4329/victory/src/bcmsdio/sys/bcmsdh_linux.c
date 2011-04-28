@@ -76,6 +76,10 @@ struct bcmsdh_hc {
 	void *ch;
 	unsigned int oob_irq;
 	unsigned long oob_flags; /* OOB Host specifiction as edge and etc */
+	bool oob_irq_registered;
+#if defined(OOB_INTR_ONLY)
+	spinlock_t irq_lock;
+#endif
 };
 static bcmsdh_hc_t *sdhcinfo = NULL;
 
@@ -606,6 +610,20 @@ int bcmsdh_register_oob_intr(void * dhdp)
 
 
 	return 0;
+}
+
+void bcmsdh_set_irq(int flag)
+{
+	if (sdhcinfo->oob_irq_registered) {
+		SDLX_MSG(("%s Flag = %d", __FUNCTION__, flag));
+		if (flag) {
+			enable_irq(sdhcinfo->oob_irq);
+			enable_irq_wake(sdhcinfo->oob_irq);
+		} else {
+			disable_irq_wake(sdhcinfo->oob_irq);
+			disable_irq(sdhcinfo->oob_irq);
+		}
+	}
 }
 
 void bcmsdh_unregister_oob_intr(void)
