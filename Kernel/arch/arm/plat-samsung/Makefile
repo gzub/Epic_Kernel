@@ -52,7 +52,13 @@ obj-$(CONFIG_SPI_S5PV210)        += dev-spi.o
 obj-$(CONFIG_S3C_DMA)		+= dma.o
 
 # PM support
-obj-$(CONFIG_PM)		+= pm.o
+ifeq ($(CONFIG_S5PV210_VICTORY),y)
+obj-$(CONFIG_PM)		+= victory/pm.o
+endif
+ifeq ($(CONFIG_S5PV210_ATLAS),y)
+obj-$(CONFIG_PM)		+= atlas/pm.o
+endif
+
 obj-$(CONFIG_PM)		+= pm-gpio.o
 obj-$(CONFIG_SAMSUNG_PM_CHECK)	+= pm-check.o
 
