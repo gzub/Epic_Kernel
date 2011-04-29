@@ -38,7 +38,7 @@
 #define WL_ERROR(x) printf x
 #define WL_TRACE(x)
 
-#ifdef CUSTOMER_HW_SAMSUNG
+#if defined(CUSTOMER_HW_SAMSUNG)
 #define POWER_OFF	0
 #define POWER_ON	1
 extern void wlan_setup_power(int on, int flag);
@@ -46,7 +46,7 @@ extern void wlan_setup_power(int on, int flag);
 #if defined(CUSTOMER_HW)
 extern  void bcm_wlan_power_off(int);
 extern  void bcm_wlan_power_on(int);
-#endif /* CUSTOMER_HW || CUSTOMER_HW_SAMSUNG */
+#endif /* CUSTOMER_HW */
 #ifdef CUSTOMER_HW2
 int wifi_set_carddetect(int on);
 int wifi_set_power(int on, unsigned long msec);
@@ -97,15 +97,13 @@ int dhd_customer_oob_irq_map(unsigned long *irq_flags_ptr)
 	WL_ERROR(("%s: customer specific Host GPIO number is (%d)\n",
 	         __FUNCTION__, dhd_oob_gpio_num));
 
-#if defined(CUSTOMER_HW)
+#if defined CUSTOMER_HW
 	host_oob_irq = MSM_GPIO_TO_INT(dhd_oob_gpio_num);
-#elif defined(CUSTOMER_HW3)
+#elif defined CUSTOMER_HW3
 	gpio_request(dhd_oob_gpio_num, "oob irq");
 	host_oob_irq = gpio_to_irq(dhd_oob_gpio_num);
 	gpio_direction_input(dhd_oob_gpio_num);
-#elif defined(CUSTOMER_HW_SAMSUNG)
-	host_oob_irq = dhd_oob_gpio_num;
-#endif
+#endif /* CUSTOMER_HW */
 #endif /* CUSTOMER_HW2 */
 
 	return (host_oob_irq);

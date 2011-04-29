@@ -62,7 +62,7 @@ obj-$(CONFIG_MAC80211_HWSIM)	+= mac80211_hwsim.o
 obj-$(CONFIG_WL12XX)	+= wl12xx/
 
 obj-$(CONFIG_IWM)	+= iwmc3200wifi/
-obj-$(CONFIG_BROADCOM_WIFI_VICTORY)	+= bcm4329/victory/
+obj-$(CONFIG_BROADCOM_WIFI_VICTORY)	+= bcm4329/
 #obj-$(CONFIG_BROADCOM_WIFI_ATLAS)	+= bcm4329/atlas/
 obj-$(CONFIG_WIMAX_VICTORY)	+= wimax/
 obj-$(CONFIG_WIMAX_GPIO_VICTORY)	+= wimaxgpio/

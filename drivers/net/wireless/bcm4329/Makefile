@@ -1,6 +1,9 @@
 EXTRA_CFLAGS += -Dlinux -DLINUX -DBDC -DBCMDRIVER -DBCMDONGLEHOST -DDHDTHREAD -DBCMWPA2 \
     -DDHD_GPL -DDHD_SCHED -DBCMSDIO -DBCMLXSDMMC -DBCMPLATFORM_BUS -DDHD_BCMEVENTS      \
-    -DSHOW_EVENTS -DANDROID_SPECIFIC -DENABLE_DEEP_SLEEP
+    -DSHOW_EVENTS -DANDROID_SPECIFIC -DENABLE_DEEP_SLEEP -DUNRELEASEDCHIP -DDHD_SDALIGN=64 \
+	-DMAX_HDR_READ=64 -DDHD_FIRSTREAD=64 -DTOE -DMMC_SDIO_ABORT -DGET_CUSTOM_MAC_ENABLE \
+	-DSET_RANDOM_MAC_SOFTAP -DCSCAN -DKEEP_ALIVE -DCONFIG_US_NON_DFS_CHANNELS_ONLY \
+	-DCUSTOMER_HW3
 
 ################ OPTIONAL FEATURES ############################################################
 #TO ENALBLE OPTIONAL FEATURES UNCOMMENT THE CORRESPONDING FLAGS
@@ -24,16 +27,16 @@ EXTRA_CFLAGS += -DAUTH_TIME_PATCH
 EXTRA_CFLAGS += -DOOB_INTR_ONLY
 
 # For HW_OOB
-#EXTRA_CFLAGS += -DHW_OOB
+EXTRA_CFLAGS += -DHW_OOB
 
 # FOR SOFTAP
 EXTRA_CFLAGS += -DSOFTAP
 
 # For Debug
-EXTRA_CFLAGS += -DDHD_DEBUG -DSRCBASE=\"$(src)/src\"
+EXTRA_CFLAGS += -DDHD_DEBUG -DSRCBASE=\"$(src)\"
 
 # HOST WAKEUP
-EXTRA_CFLAGS += -DBCM_HOSTWAKE
+#EXTRA_CFLAGS += -DBCM_HOSTWAKE
 
 #STATIC MEMORY ALLOCATION FEATURE
 EXTRA_CFLAGS += -DDHD_USE_STATIC_BUF
@@ -57,12 +60,8 @@ ifeq ($(CONFIG_BCM_EMBED_FW),y)
 	EXTRA_CFLAGS		+= -DIMAGE_NAME="4325b0/sdio-g-cdc-reclaim-wme"
 endif
 
-EXTRA_CFLAGS += -I$(src)/src/include/
-EXTRA_CFLAGS += -I$(src)/src/dhd/sys/
-EXTRA_CFLAGS += -I$(src)/src/dongle/
-EXTRA_CFLAGS += -I$(src)/src/bcmsdio/sys/
-EXTRA_CFLAGS += -I$(src)/src/wl/sys/
-EXTRA_CFLAGS += -I$(src)/src/shared/
+EXTRA_CFLAGS += -I$(src)
+EXTRA_CFLAGS += -I$(src)/include
 
 KBUILD_CFLAGS += -I$(LINUXDIR)/include -I$(shell pwd)
 
@@ -70,24 +69,24 @@ KBUILD_CFLAGS += -I$(LINUXDIR)/include -I$(shell pwd)
 #obj-$(CONFIG_BROADCOM_WIFI)-m	+= dhd.o
 obj-m	+= dhd.o
 
-dhd-y := src/dhd/sys/dhd_linux.o \
-         src/dhd/sys/dhd_common.o \
-         src/dhd/sys/dhd_cdc.o \
-         src/dhd/sys/dhd_linux_sched.o\
-         src/dhd/sys/dhd_sdio.o \
-         src/dhd/sys/dhd_custom_gpio.o \
-         src/shared/aiutils.o \
-         src/shared/bcmutils.o \
-         src/shared/bcmwifi.o \
-         src/shared/hndpmu.o \
-         src/shared/linux_osl.o \
-         src/shared/sbutils.o \
-         src/shared/siutils.o \
-         src/bcmsdio/sys/bcmsdh_sdmmc.o \
-         src/bcmsdio/sys/bcmsdh.o \
-         src/bcmsdio/sys/bcmsdh_linux.o \
-         src/bcmsdio/sys/bcmsdh_sdmmc_linux.o \
-         src/wl/sys/wl_iw.o
+dhd-y := dhd_linux.o \
+         dhd_common.o \
+         dhd_cdc.o \
+         dhd_linux_sched.o\
+         dhd_sdio.o \
+         dhd_custom_gpio.o \
+         aiutils.o \
+         bcmutils.o \
+         bcmwifi.o \
+         hndpmu.o \
+         linux_osl.o \
+         sbutils.o \
+         siutils.o \
+         bcmsdh_sdmmc.o \
+         bcmsdh.o \
+         bcmsdh_linux.o \
+         bcmsdh_sdmmc_linux.o \
+         wl_iw.o
 all:
 	@echo "$(MAKE) --no-print-directory -C $(KDIR) SUBDIRS=$(CURDIR) modules"
 	@$(MAKE) --no-print-directory -C $(KDIR) \
@@ -95,24 +94,24 @@ all:
 
 clean: 
 	rm -rf *.o *.ko *.mod.c *~ .*.cmd Module.symvers modules.order .tmp_versions	\
-	 	 src/dhd/sys/dhd_linux.o \
-         src/dhd/sys/dhd_common.o \
-         src/dhd/sys/dhd_cdc.o \
-         src/dhd/sys/dhd_linux_sched.o\
-         src/dhd/sys/dhd_sdio.o \
-         src/dhd/sys/dhd_custom_gpio.o \
-         src/shared/aiutils.o \
-         src/shared/bcmutils.o \
-         src/shared/bcmwifi.o \
-         src/shared/hndpmu.o \
-         src/shared/linux_osl.o \
-         src/shared/sbutils.o \
-         src/shared/siutils.o \
-         src/bcmsdio/sys/bcmsdh_sdmmc.o \
-         src/bcmsdio/sys/bcmsdh.o \
-         src/bcmsdio/sys/bcmsdh_linux.o \
-         src/bcmsdio/sys/bcmsdh_sdmmc_linux.o \
-         src/wl/sys/wl_iw.o
+	 	 dhd_linux.o \
+         dhd_common.o \
+         dhd_cdc.o \
+         dhd_linux_sched.o\
+         dhd_sdio.o \
+         dhd_custom_gpio.o \
+         aiutils.o \
+         bcmutils.o \
+         bcmwifi.o \
+         hndpmu.o \
+         linux_osl.o \
+         sbutils.o \
+         siutils.o \
+         bcmsdh_sdmmc.o \
+         bcmsdh.o \
+         bcmsdh_linux.o \
+         bcmsdh_sdmmc_linux.o \
+         wl_iw.o
 
 install:
 	@$(MAKE) --no-print-directory -C $(KDIR) \

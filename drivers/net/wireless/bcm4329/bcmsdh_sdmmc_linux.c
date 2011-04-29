@@ -58,10 +58,7 @@
 
 #include <bcmsdh_sdmmc.h>
 
-#include <dngl_stats.h>
-#include <dhd.h>
-
-
+#include <dhd_dbg.h>
 
 extern void sdioh_sdmmc_devintr_off(sdioh_info_t *sd);
 extern void sdioh_sdmmc_devintr_on(sdioh_info_t *sd);

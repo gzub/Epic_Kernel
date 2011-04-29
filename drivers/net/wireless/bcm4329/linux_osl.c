@@ -26,9 +26,7 @@
 
 
 #define LINUX_OSL
-#if defined(CHROMIUMOS_COMPAT_WIRELESS)
-#include <linux/sched.h>
-#endif
+
 #include <typedefs.h>
 #include <bcmendian.h>
 #include <linuxver.h>
@@ -38,25 +36,12 @@
 #include <linux/delay.h>
 #include <pcicfg.h>
 
-#ifdef DHD_DEBUG
-#define OSL_MSG_ERROR(x) printk x
-#define OSL_MSG_INFO(x)
-#else
-#define OSL_MSG_ERROR(x)
-#define OSL_MSG_INFO(x)
-#endif
-
 #define PCI_CFG_RETRY 		10
 
 #define OS_HANDLE_MAGIC		0x1234abcd	
 #define BCM_MEM_FILENAME_LEN 	24		
 
 #ifdef DHD_USE_STATIC_BUF
-#define DHD_SKB_HDRSIZE 		336
-#define DHD_SKB_1PAGE_BUFSIZE	((PAGE_SIZE*1)-DHD_SKB_HDRSIZE)
-#define DHD_SKB_2PAGE_BUFSIZE	((PAGE_SIZE*2)-DHD_SKB_HDRSIZE)
-#define DHD_SKB_4PAGE_BUFSIZE	((PAGE_SIZE*4)-DHD_SKB_HDRSIZE)
-
 #define MAX_STATIC_BUF_NUM 16
 #define STATIC_BUF_SIZE	(PAGE_SIZE*2)
 #define STATIC_BUF_TOTAL_LEN (MAX_STATIC_BUF_NUM*STATIC_BUF_SIZE)
@@ -72,9 +57,8 @@ static bcm_static_buf_t *bcm_static_buf = 0;
 typedef struct bcm_static_pkt {
 	struct sk_buff *skb_4k[MAX_STATIC_PKT_NUM];
 	struct sk_buff *skb_8k[MAX_STATIC_PKT_NUM];
-	struct sk_buff *skb_16k;
 	struct semaphore osl_pkt_sem;
-	unsigned char pkt_use[MAX_STATIC_PKT_NUM*2+1];
+	unsigned char pkt_use[MAX_STATIC_PKT_NUM*2];
 } bcm_static_pkt_t;
 static bcm_static_pkt_t *bcm_static_skb = 0;
 
@@ -167,9 +151,10 @@ osl_t *
 osl_attach(void *pdev, uint bustype, bool pkttag)
 {
 	osl_t *osh;
+	gfp_t flags;
 
-//	osh = kmalloc(sizeof(osl_t), GFP_ATOMIC);//CONFIG_CONTROL_PM
-	osh = kmalloc(sizeof(osl_t), GFP_KERNEL);//CONFIG_CONTROL_PM
+	flags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
+	osh = kmalloc(sizeof(osl_t), flags);
 	ASSERT(osh);
 
 	bzero(osh, sizeof(osl_t));
@@ -208,11 +193,11 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 	if (!bcm_static_buf) {
 		if (!(bcm_static_buf = (bcm_static_buf_t *)dhd_os_prealloc(3, STATIC_BUF_SIZE+
 			STATIC_BUF_TOTAL_LEN))) {
-			OSL_MSG_ERROR(("osl_attach: can not alloc static buf!\n"));
+			printk("can not alloc static buf!\n");
 		}
-		else
-			OSL_MSG_INFO(("osl_attach: alloc static buf at %x!\n", (unsigned int)bcm_static_buf));
-
+		else {
+			/* printk("alloc static buf at %x!\n", (unsigned int)bcm_static_buf); */
+		}
 		
 		init_MUTEX(&bcm_static_buf->static_sem);
 
@@ -224,48 +209,18 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 	if (!bcm_static_skb)
 	{
 		int i;
-#ifndef CUSTOMER_HW_SAMSUNG
 		void *skb_buff_ptr = 0;
-#endif
 		bcm_static_skb = (bcm_static_pkt_t *)((char *)bcm_static_buf + 2048);
-#ifdef CUSTOMER_HW_SAMSUNG
-		for (i = 0; i < MAX_STATIC_PKT_NUM; i++) {
-			bcm_static_skb->skb_4k[i] = dev_alloc_skb(DHD_SKB_1PAGE_BUFSIZE);
-			if (bcm_static_skb->skb_4k[i] == NULL) {
-				OSL_MSG_ERROR(("osl_attach: 4K memory allocation failure. idx=%d\n", i));
-				goto err;
-			}
-		}
-			
-		for (i = 0; i < MAX_STATIC_PKT_NUM; i++) {
-			bcm_static_skb->skb_8k[i] = dev_alloc_skb_kernel(DHD_SKB_2PAGE_BUFSIZE);
-			if (bcm_static_skb->skb_8k[i] == NULL) {
-				OSL_MSG_ERROR(("osl_attach: 8K memory allocation failure. idx=%d\n", i));
-				goto err;
-			}
-		}
-
-		bcm_static_skb->skb_16k = dev_alloc_skb_kernel(DHD_SKB_4PAGE_BUFSIZE);
-		if (bcm_static_skb->skb_16k == NULL) {
-			OSL_MSG_ERROR(("osl_attach: 16K memory allocation failure. idx=%d\n", i));
-			goto err;
-		}
-#else
 		skb_buff_ptr = dhd_os_prealloc(4, 0);
 
 		bcopy(skb_buff_ptr, bcm_static_skb, sizeof(struct sk_buff *)*16);
-#endif /* CUSTOMER_HW_SAMSUNG */
-		for (i = 0; i < MAX_STATIC_PKT_NUM*2+1; i++)
+		for (i = 0; i < MAX_STATIC_PKT_NUM*2; i++)
 			bcm_static_skb->pkt_use[i] = 0;
 
 		init_MUTEX(&bcm_static_skb->osl_pkt_sem);
 	}
 #endif 
 	return osh;
-err:
-
-	kfree(osh);
-	return 0;
 }
 
 void
@@ -279,12 +234,6 @@ osl_detach(osl_t *osh)
 		bcm_static_buf = 0;
 	}
 	if (bcm_static_skb) {
-		int i;
-		down(&bcm_static_skb->osl_pkt_sem);
-		for(i=0; i<MAX_STATIC_PKT_NUM*2+1; i++) {
-			dev_kfree_skb(bcm_static_skb->skb_4k[i]);
-		}
-		up(&bcm_static_skb->osl_pkt_sem);
 		bcm_static_skb = 0;
 	}
 #endif 
@@ -299,21 +248,6 @@ osl_pktget(osl_t *osh, uint len)
 	struct sk_buff *skb;
 
 	if ((skb = dev_alloc_skb(len))) {
-		skb_put(skb, len);
-		skb->priority = 0;
-
-
-		osh->pub.pktalloced++;
-	}
-
-	return ((void*) skb);
-}
-void*
-osl_pktget_kernel(osl_t *osh, uint len)
-{
-	struct sk_buff *skb;
-
-	if ((skb = dev_alloc_skb_kernel(len))) {
 		skb_put(skb, len);
 		skb->priority = 0;
 
@@ -363,15 +297,15 @@ osl_pktget_static(osl_t *osh, uint len)
 	struct sk_buff *skb;
 
 	
-	if (len > DHD_SKB_4PAGE_BUFSIZE)
+	if (len > (PAGE_SIZE*2))
 	{
-		OSL_MSG_ERROR(("osl_pktget_static: Do we really need this big skb?? len=%d\n", len));
-		return osl_pktget_kernel(osh, len);
+		printk("Do we really need this big skb??\n");
+		return osl_pktget(osh, len);
 	}
 
 	
 	down(&bcm_static_skb->osl_pkt_sem);
-	if (len <= DHD_SKB_1PAGE_BUFSIZE)
+	if (len <= PAGE_SIZE)
 	{
 		
 		for (i = 0; i < MAX_STATIC_PKT_NUM; i++)
@@ -393,40 +327,28 @@ osl_pktget_static(osl_t *osh, uint len)
 		}
 	}
 
-	if (len <= DHD_SKB_2PAGE_BUFSIZE) 
+	
+	for (i = 0; i < MAX_STATIC_PKT_NUM; i++)
 	{
-		for (i = 0; i < MAX_STATIC_PKT_NUM; i++)
-		{
-			if (bcm_static_skb->pkt_use[i+MAX_STATIC_PKT_NUM] == 0)
-				break;
-		}
-
-		if (i != MAX_STATIC_PKT_NUM)
-		{
-			bcm_static_skb->pkt_use[i+MAX_STATIC_PKT_NUM] = 1;
-			up(&bcm_static_skb->osl_pkt_sem);
-			skb = bcm_static_skb->skb_8k[i];
-			skb->tail = skb->data + len;
-			skb->len = len;
-			
-			return skb;
-		}
+		if (bcm_static_skb->pkt_use[i+MAX_STATIC_PKT_NUM] == 0)
+			break;
 	}
 
-	if (bcm_static_skb->pkt_use[MAX_STATIC_PKT_NUM*2] == 0) 
+	if (i != MAX_STATIC_PKT_NUM)
 	{
-		bcm_static_skb->pkt_use[MAX_STATIC_PKT_NUM*2] = 1;
+		bcm_static_skb->pkt_use[i+MAX_STATIC_PKT_NUM] = 1;
 		up(&bcm_static_skb->osl_pkt_sem);
-
-		skb = bcm_static_skb->skb_16k;
+		skb = bcm_static_skb->skb_8k[i];
 		skb->tail = skb->data + len;
 		skb->len = len;
-
+		
 		return skb;
 	}
+
+
 	
 	up(&bcm_static_skb->osl_pkt_sem);
-	OSL_MSG_ERROR(("osl_pktget_static: all static pkt in use!\n"));
+	printk("all static pkt in use!\n");
 	return osl_pktget(osh, len);
 }
 
@@ -436,7 +358,7 @@ osl_pktfree_static(osl_t *osh, void *p, bool send)
 {
 	int i;
 	
-	for (i = 0; i < MAX_STATIC_PKT_NUM*2+1; i++)
+	for (i = 0; i < MAX_STATIC_PKT_NUM*2; i++)
 	{
 		if (p == bcm_static_skb->skb_4k[i])
 		{
@@ -533,8 +455,8 @@ void*
 osl_malloc(osl_t *osh, uint size)
 {
 	void *addr;
+	gfp_t flags;
 
-	
 	if (osh)
 		ASSERT(osh->magic == OS_HANDLE_MAGIC);
 
@@ -555,7 +477,7 @@ osl_malloc(osl_t *osh, uint size)
 			if (i == MAX_STATIC_BUF_NUM)
 			{
 				up(&bcm_static_buf->static_sem);
-				OSL_MSG_INFO(("osl_malloc: all static buff in use!\n"));
+				printk("all static buff in use!\n");
 				goto original;
 			}
 			
@@ -571,15 +493,11 @@ osl_malloc(osl_t *osh, uint size)
 	}
 original:
 #endif 
-
-	if ((addr = kmalloc(size, GFP_ATOMIC)) == NULL) {
-		OSL_MSG_ERROR(("osl_malloc: GFP_ATOMIC failed, trying GFP_KERNEL\n"));
-        if ((addr = kmalloc(size, GFP_KERNEL)) == NULL) {
-			OSL_MSG_ERROR(("osl_malloc: GFP_KERNEL failed also\n"));
-            if (osh)
-                osh->failed++;
-            return (NULL);
-        }
+	flags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
+	if ((addr = kmalloc(size, flags)) == NULL) {
+		if (osh)
+			osh->failed++;
+		return (NULL);
 	}
 	if (osh)
 		osh->malloced += size;
@@ -688,8 +606,10 @@ void *
 osl_pktdup(osl_t *osh, void *skb)
 {
 	void * p;
+	gfp_t flags;
 
-	if ((p = skb_clone((struct sk_buff*)skb, GFP_ATOMIC)) == NULL)
+	flags = (in_atomic()) ? GFP_ATOMIC : GFP_KERNEL;
+	if ((p = skb_clone((struct sk_buff*)skb, flags)) == NULL)
 		return NULL;
 
 	
