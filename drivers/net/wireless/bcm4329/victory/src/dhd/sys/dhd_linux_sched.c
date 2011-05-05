@@ -1,5 +1,5 @@
 /*
- * Broadcom SPI Low-Level Hardware Driver API
+ * Expose some of the kernel scheduler routines
  *
  * Copyright (C) 1999-2010, Broadcom Corporation
  * 
@@ -21,16 +21,18 @@
  * software in any way with any other Broadcom software provided under a license
  * other than the GPL, without Broadcom's express prior written consent.
  *
- * $Id: bcmspi.h,v 13.3.10.2 2008/06/30 21:09:40 Exp $
+ * $Id: dhd_linux_sched.c,v 1.1.34.1.6.1 2009/01/16 01:17:40 Exp $
  */
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/sched.h>
+#include <linuxver.h>
 
-extern void spi_devintr_off(sdioh_info_t *sd);
-extern void spi_devintr_on(sdioh_info_t *sd);
-extern bool spi_start_clock(sdioh_info_t *sd, uint16 new_sd_divisor);
-extern bool spi_controller_highspeed_mode(sdioh_info_t *sd, bool hsmode);
-extern bool spi_check_client_intr(sdioh_info_t *sd, int *is_dev_intr);
-extern bool spi_hw_attach(sdioh_info_t *sd);
-extern bool spi_hw_detach(sdioh_info_t *sd);
-extern void spi_sendrecv(sdioh_info_t *sd, uint8 *msg_out, uint8 *msg_in, int msglen);
-extern void spi_spinbits(sdioh_info_t *sd);
-extern void spi_waitbits(sdioh_info_t *sd, bool yield);
+int setScheduler(struct task_struct *p, int policy, struct sched_param *param)
+{
+	int rc = 0;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0))
+	rc = sched_setscheduler(p, policy, param);
+#endif /* LinuxVer */
+	return rc;
+}
