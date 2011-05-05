@@ -39,6 +39,8 @@ lib/gen_crc32table
 modules.order
 Module.symvers
 *.o
+*.o.d
+*.o.tmp
 *.patch
 scripts/basic/docproc
 scripts/basic/fixdep
