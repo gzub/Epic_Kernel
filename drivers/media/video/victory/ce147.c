@@ -3573,12 +3573,12 @@ static int ce147_set_focus_mode(struct v4l2_subdev *sd, struct v4l2_control *ctr
 			ce147_buf_set_focus_mode[0] = 0x01;
 		break;
 
-		case FOCUS_MODE_FD:
+		case FOCUS_MODE_FACEDETECT:
 		break;
 
 		case FOCUS_MODE_AUTO:
 		case FOCUS_MODE_AUTO_DEFAULT:
-		case FOCUS_MODE_FD_DEFAULT:
+		case FOCUS_MODE_FACEDETECT_DEFAULT:
 		default:
 			ce147_buf_set_focus_mode[0] = 0x00;
 		break;
@@ -3591,10 +3591,10 @@ static int ce147_set_focus_mode(struct v4l2_subdev *sd, struct v4l2_control *ctr
 #endif
 	state->cur_af_status = ce147_buf_set_focus_mode[0];
 
-	if(ctrl->value != FOCUS_MODE_FD)
+	if(ctrl->value != FOCUS_MODE_FACEDETECT)
 	{
 		if((state->pre_af_status != state->cur_af_status) \
-			|| (ctrl->value == FOCUS_MODE_MACRO_DEFAULT)||(ctrl->value == FOCUS_MODE_AUTO_DEFAULT)|| (ctrl->value == FOCUS_MODE_FD_DEFAULT))
+			|| (ctrl->value == FOCUS_MODE_MACRO_DEFAULT)||(ctrl->value == FOCUS_MODE_AUTO_DEFAULT)|| (ctrl->value == FOCUS_MODE_FACEDETECT_DEFAULT))
 		{
 #if defined(CONFIG_ARIES_NTT)||defined(CONFIG_ARIES_VER_B2) // Modify NTTS1 || victory ansari
                 	ce147_msg(&client->dev, "%s: unlock\n", __func__);		
