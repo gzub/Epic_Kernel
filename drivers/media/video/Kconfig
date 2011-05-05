@@ -1080,10 +1080,6 @@ config VIDEO_CE147
         ---help---
           This driver supports CE147 SoC camera module
 
-config VIDEO_CE147_ATLAS
-        bool "Select supports CE147 SoC camera module for atlas"
-        depends on VIDEO_CE147
-
 config VIDEO_CE147_VICTORY
         bool "Select supports CE147 SoC camera module for victory"
         depends on VIDEO_CE147
@@ -1095,11 +1091,6 @@ config VIDEO_S5KA3DFX
         depends on I2C && VIDEO_V4L2 && MACH_S5PC110_ARIES
         ---help---
           This driver supports S5KA3DFX SoC camera module
-
-config VIDEO_S5KA3DFX_VICTORY
-        bool "Select S5KA3DFX SoC camera module for victory"
-        depends on VIDEO_S5KA3DFX
-
 
 config VIDEO_ISX005
         tristate "ISX005 supporting camera driver"
